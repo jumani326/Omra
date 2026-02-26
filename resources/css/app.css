@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --color-primary-green: #0F3F2E;
+    --color-gold-accent: #C9A227;
+    --color-dark-green: #0B2C21;
+    --color-success: #22C55E;
+    --color-warning: #F59E0B;
+    --color-danger: #EF4444;
+}
+
+/* Design System Colors */
+.bg-primary-green {
+    background-color: var(--color-primary-green);
+}
+
+.text-primary-green {
+    color: var(--color-primary-green);
+}
+
+.bg-gold-accent {
+    background-color: var(--color-gold-accent);
+}
+
+.text-gold-accent {
+    color: var(--color-gold-accent);
+}
+
+.bg-dark-green {
+    background-color: var(--color-dark-green);
+}
+
+.text-dark-green {
+    color: var(--color-dark-green);
+}
+
+.bg-success {
+    background-color: var(--color-success);
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.bg-warning {
+    background-color: var(--color-warning);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+.bg-danger {
+    background-color: var(--color-danger);
+}
+
+.text-danger {
+    color: var(--color-danger);
+}
+
+/* Cards */
+.card {
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Alpine.js cloak */
+[x-cloak] {
+    display: none !important;
+}

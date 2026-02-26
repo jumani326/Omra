@@ -1,0 +1,145 @@
+@extends('layouts.app')
+
+@section('page-title', 'Modifier Forfait')
+@section('page-description', 'Modifier les informations du forfait')
+
+@section('content')
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Modifier les Informations</h2>
+
+        <form action="{{ route('packages.update', $package) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nom -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom du forfait *</label>
+                    <input type="text" name="name" value="{{ old('name', $package->name) }}" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('name') border-red-500 @enderror">
+                    @error('name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                    <select name="type" required
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('type') border-red-500 @enderror">
+                        <option value="economic" {{ old('type', $package->type) == 'economic' ? 'selected' : '' }}>Économique</option>
+                        <option value="standard" {{ old('type', $package->type) == 'standard' ? 'selected' : '' }}>Standard</option>
+                        <option value="premium" {{ old('type', $package->type) == 'premium' ? 'selected' : '' }}>Premium</option>
+                        <option value="vip" {{ old('type', $package->type) == 'vip' ? 'selected' : '' }}>VIP</option>
+                    </select>
+                    @error('type')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Nombre de places -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de places *</label>
+                    <input type="number" name="slots" value="{{ old('slots', $package->slots) }}" min="1" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('slots') border-red-500 @enderror">
+                    @error('slots')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Prix -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Prix de vente (MAD) *</label>
+                    <input type="number" name="price" value="{{ old('price', $package->price) }}" step="0.01" min="0" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('price') border-red-500 @enderror">
+                    @error('price')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Coût -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coût (MAD) *</label>
+                    <input type="number" name="cost" value="{{ old('cost', $package->cost) }}" step="0.01" min="0" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('cost') border-red-500 @enderror">
+                    @error('cost')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Date de départ -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date de départ *</label>
+                    <input type="date" name="departure_date" value="{{ old('departure_date', $package->departure_date->format('Y-m-d')) }}" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('departure_date') border-red-500 @enderror">
+                    @error('departure_date')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Date de retour -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date de retour *</label>
+                    <input type="date" name="return_date" value="{{ old('return_date', $package->return_date->format('Y-m-d')) }}" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('return_date') border-red-500 @enderror">
+                    @error('return_date')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Hôtel La Mecque -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hôtel La Mecque</label>
+                    <select name="hotel_mecca_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                        <option value="">Sélectionner</option>
+                        @foreach(\App\Models\Hotel::where('city', 'mecca')->get() as $hotel)
+                            <option value="{{ $hotel->id }}" {{ old('hotel_mecca_id', $package->hotel_mecca_id) == $hotel->id ? 'selected' : '' }}>
+                                {{ $hotel->name }} ({{ $hotel->stars }}⭐)
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Nuits La Mecque -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nuits La Mecque *</label>
+                    <input type="number" name="nights_mecca" value="{{ old('nights_mecca', $package->nights_mecca) }}" min="1" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                </div>
+
+                <!-- Hôtel Médine -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hôtel Médine</label>
+                    <select name="hotel_medina_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                        <option value="">Sélectionner</option>
+                        @foreach(\App\Models\Hotel::where('city', 'medina')->get() as $hotel)
+                            <option value="{{ $hotel->id }}" {{ old('hotel_medina_id', $package->hotel_medina_id) == $hotel->id ? 'selected' : '' }}>
+                                {{ $hotel->name }} ({{ $hotel->stars }}⭐)
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Nuits Médine -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nuits Médine *</label>
+                    <input type="number" name="nights_medina" value="{{ old('nights_medina', $package->nights_medina) }}" min="0" required
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{{ route('packages.show', $package) }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Annuler
+                </a>
+                <button type="submit" class="px-4 py-2 bg-primary-green text-white rounded-md hover:bg-dark-green transition">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+
