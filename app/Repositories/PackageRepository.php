@@ -13,9 +13,12 @@ class PackageRepository
         $query = Package::with(['branch'])
             ->withCount('pilgrims');
 
-        // Filtre par branche
-        if (Auth::user()->branch_id && !Auth::user()->hasRole('Super Admin Agence')) {
-            $query->where('branch_id', Auth::user()->branch_id);
+        // Filtre par branche (Super Admin peut filtrer par branche via session)
+        $branchId = Auth::user()->hasRole('Super Admin Agence')
+            ? session('current_branch_id')
+            : Auth::user()->branch_id;
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
 
         // Filtres
@@ -65,8 +68,11 @@ class PackageRepository
         $query = Package::where('slots_remaining', '>', 0)
             ->where('departure_date', '>=', now());
 
-        if (Auth::user()->branch_id && !Auth::user()->hasRole('Super Admin Agence')) {
-            $query->where('branch_id', Auth::user()->branch_id);
+        $branchId = Auth::user()->hasRole('Super Admin Agence')
+            ? session('current_branch_id')
+            : Auth::user()->branch_id;
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
 
         return $query->get();

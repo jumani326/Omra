@@ -79,7 +79,7 @@
                     </label>
                     <input type="file" name="main_image" accept="image/jpeg,image/png,image/jpg"
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('main_image') border-red-500 @enderror">
-                    <p class="mt-1 text-sm text-gray-500">Image principale de l'hôtel (JPG, PNG, max 5MB)</p>
+                    <p class="mt-1 text-sm text-gray-500">Image principale de l'hôtel (JPG, PNG, max 10 Mo)</p>
                     @error('main_image')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -105,7 +105,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Ajouter des images de chambres</label>
                     <input type="file" name="room_images[]" accept="image/jpeg,image/png,image/jpg" multiple
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('room_images.*') border-red-500 @enderror">
-                    <p class="mt-1 text-sm text-gray-500">Vous pouvez sélectionner plusieurs images de chambres (JPG, PNG, max 5MB chacune)</p>
+                    <p class="mt-1 text-sm text-gray-500">Vous pouvez sélectionner plusieurs images de chambres (JPG, PNG, max 10 Mo chacune)</p>
                     @error('room_images.*')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror

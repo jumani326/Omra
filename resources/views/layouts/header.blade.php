@@ -6,6 +6,18 @@
         </div>
         
         <div class="flex items-center space-x-4">
+            @if(auth()->user()->hasRole('Super Admin Agence'))
+            <form action="{{ route('branch.switch') }}" method="POST" class="flex items-center gap-2">
+                @csrf
+                <label class="text-sm text-gray-600">Branche :</label>
+                <select name="branch_id" onchange="this.form.submit()" class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green py-1.5">
+                    <option value="">Toutes les branches</option>
+                    @foreach(\App\Models\Branch::orderBy('name')->get() as $b)
+                    <option value="{{ $b->id }}" {{ session('current_branch_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
+                    @endforeach
+                </select>
+            </form>
+            @endif
             <!-- Notifications -->
             <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

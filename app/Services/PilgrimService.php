@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Pilgrim;
+use App\Models\ActivityLog;
 use App\Repositories\PilgrimRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -73,6 +74,30 @@ class PilgrimService
     public function updateStatus(Pilgrim $pilgrim, string $status): bool
     {
         return $this->repository->update($pilgrim, ['status' => $status]);
+    }
+
+    public function transferToBranch(Pilgrim $pilgrim, int $newBranchId): bool
+    {
+        $oldBranchId = $pilgrim->branch_id;
+        if ($oldBranchId == $newBranchId) {
+            return false;
+        }
+
+        return DB::transaction(function () use ($pilgrim, $newBranchId, $oldBranchId) {
+            $pilgrim->update(['branch_id' => $newBranchId]);
+            ActivityLog::create([
+                'pilgrim_id' => $pilgrim->id,
+                'user_id' => Auth::id(),
+                'action' => 'transferred_branch',
+                'description' => sprintf(
+                    'Pèlerin transféré de la branche #%s vers la branche #%s',
+                    $oldBranchId ?? 'N/A',
+                    $newBranchId
+                ),
+                'metadata' => ['from_branch_id' => $oldBranchId, 'to_branch_id' => $newBranchId],
+            ]);
+            return true;
+        });
     }
 
     private function uploadDocuments(Pilgrim $pilgrim, array $documents): void

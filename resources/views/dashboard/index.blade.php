@@ -112,80 +112,60 @@
         </div>
     </div>
 
-    <!-- Charts Row -->
+    <!-- Charts Row (Chart.js) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Revenue Growth Chart -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-900">Revenue Growth</h2>
-                <select class="border-gray-300 rounded-md text-sm focus:border-primary-green focus:ring-primary-green">
-                    <option>Last 6 Months</option>
-                    <option>Last 12 Months</option>
-                    <option>This Year</option>
-                </select>
-            </div>
-            <div class="h-64 flex items-end justify-between space-x-2">
-                @php
-                    $months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
-                    $revenueData = [35000, 42000, 38000, 48000, 45000, 52000];
-                    $maxRevenue = max($revenueData);
-                @endphp
-                @foreach($months as $index => $month)
-                <div class="flex-1 flex flex-col items-center">
-                    <div class="w-full bg-primary-green rounded-t" style="height: {{ ($revenueData[$index] / $maxRevenue) * 100 }}%"></div>
-                    <p class="text-xs text-gray-600 mt-2">{{ $month }}</p>
-                </div>
-                @endforeach
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Revenus sur 12 mois (MAD)</h2>
+            <div class="h-64">
+                <canvas id="chartRevenue"></canvas>
             </div>
         </div>
-
-        <!-- Visa Distribution Chart -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-900">Visa Distribution</h2>
-            </div>
-            <div class="flex items-center justify-center">
-                <div class="relative w-48 h-48">
-                    <!-- Donut Chart -->
-                    <svg class="transform -rotate-90 w-48 h-48">
-                        <circle cx="96" cy="96" r="80" stroke="#e5e7eb" stroke-width="16" fill="none"></circle>
-                        <circle cx="96" cy="96" r="80" stroke="#0F3F2E" stroke-width="16" fill="none"
-                                stroke-dasharray="{{ 2 * pi() * 80 * 0.98 }} {{ 2 * pi() * 80 }}"
-                                stroke-dashoffset="0"></circle>
-                    </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="text-center">
-                            <p class="text-2xl font-bold text-gray-900">98%</p>
-                            <p class="text-sm text-gray-600">APPROVED</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-6 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-primary-green rounded-full mr-2"></div>
-                        <span class="text-sm text-gray-700">Approved</span>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900">12,608</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-yellow-400 rounded-full mr-2"></div>
-                        <span class="text-sm text-gray-700">Pending</span>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900">212</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                        <span class="text-sm text-gray-700">Rejected</span>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900">20</span>
-                </div>
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Distribution des visas</h2>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="chartVisas"></canvas>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var revenueData = @json($revenueByMonth ?? []);
+            if (document.getElementById('chartRevenue')) {
+                new Chart(document.getElementById('chartRevenue'), {
+                    type: 'line',
+                    data: {
+                        labels: revenueData.map(function(d) { return d.label; }),
+                        datasets: [{
+                            label: 'Revenus (MAD)',
+                            data: revenueData.map(function(d) { return d.value; }),
+                            borderColor: '#0F3F2E',
+                            backgroundColor: 'rgba(15, 63, 46, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+            var visaData = @json($visaDistribution ?? []);
+            var statusLabels = { 'not_submitted': 'Non soumis', 'submitted': 'Soumis', 'processing': 'En cours', 'approved': 'Approuvé', 'refused': 'Refusé' };
+            var colors = ['#9ca3af', '#eab308', '#3b82f6', '#22c55e', '#ef4444'];
+            if (document.getElementById('chartVisas')) {
+                new Chart(document.getElementById('chartVisas'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(visaData).map(function(k) { return statusLabels[k] || k; }),
+                        datasets: [{
+                            data: Object.values(visaData),
+                            backgroundColor: colors.slice(0, Object.keys(visaData).length)
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                });
+            }
+        });
+    </script>
 
     <!-- Bottom Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -269,11 +249,7 @@
                                 </span>
                             </td>
                             <td class="py-3 text-right">
-                                <button class="text-gray-400 hover:text-gray-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                                    </svg>
-                                </button>
+                                <a href="{{ route('pilgrims.show', $pilgrim) }}" class="text-primary-green hover:underline text-sm">Voir</a>
                             </td>
                         </tr>
                         @empty

@@ -11,7 +11,17 @@
             <h1 class="text-2xl font-bold text-gray-900">{{ $pilgrim->first_name }} {{ $pilgrim->last_name }}</h1>
             <p class="text-gray-600 mt-1">Détails et historique</p>
         </div>
-        <div class="flex space-x-3">
+        <div class="flex flex-wrap gap-3">
+            @can('create', App\Models\Visa::class)
+            <a href="{{ route('visas.create', ['pilgrim_id' => $pilgrim->id]) }}" class="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-dark-green transition">
+                + Dossier visa
+            </a>
+            @endcan
+            @can('create', App\Models\Payment::class)
+            <a href="{{ route('payments.create', ['pilgrim_id' => $pilgrim->id]) }}" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+                + Paiement
+            </a>
+            @endcan
             @can('update', $pilgrim)
             <a href="{{ route('pilgrims.edit', $pilgrim) }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                 Modifier
@@ -111,6 +121,47 @@
                 </div>
             </div>
             @endif
+        </div>
+
+        @auth
+        @if(auth()->user()->hasRole('Super Admin Agence') && $branches->count() > 1)
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Transférer vers une autre branche</h2>
+            <form action="{{ route('pilgrims.transfer', $pilgrim) }}" method="POST" class="flex flex-wrap items-end gap-3">
+                @csrf
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nouvelle branche</label>
+                    <select name="branch_id" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                        @foreach($branches as $b)
+                        <option value="{{ $b->id }}" {{ $pilgrim->branch_id == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">Transférer</button>
+            </form>
+        </div>
+        @endif
+        @endauth
+
+        <!-- Visa & Paiements -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Visa & Paiements</h2>
+            <div class="space-y-3">
+                @if($pilgrim->visa)
+                <p class="text-sm text-gray-600">Visa : <a href="{{ route('visas.show', $pilgrim->visa) }}" class="text-primary-green hover:underline font-medium">{{ $pilgrim->visa->reference_no ?? 'Dossier #' . $pilgrim->visa->id }}</a> — {{ ucfirst(str_replace('_', ' ', $pilgrim->visa->status)) }}</p>
+                @else
+                @can('create', App\Models\Visa::class)
+                <a href="{{ route('visas.create', ['pilgrim_id' => $pilgrim->id]) }}" class="block text-sm text-primary-green hover:underline">+ Créer un dossier visa</a>
+                @endcan
+                @endif
+                @if($pilgrim->payments->count() > 0)
+                <p class="text-sm text-gray-600">{{ $pilgrim->payments->count() }} paiement(s) — Total : <strong>{{ number_format($pilgrim->payments->where('status', 'completed')->sum('amount'), 0) }} MAD</strong></p>
+                <a href="{{ route('payments.index', ['pilgrim_id' => $pilgrim->id]) }}" class="text-sm text-primary-green hover:underline">Voir les paiements</a>
+                @endif
+                @can('create', App\Models\Payment::class)
+                <a href="{{ route('payments.create', ['pilgrim_id' => $pilgrim->id]) }}" class="block text-sm text-primary-green hover:underline">+ Enregistrer un paiement</a>
+                @endcan
+            </div>
         </div>
 
         <!-- Timeline -->

@@ -50,8 +50,11 @@ class HotelController extends Controller
             'city' => 'required|in:mecca,medina',
             'stars' => 'required|integer|min:1|max:5',
             'distance_haram' => 'nullable|numeric|min:0',
-            'main_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'room_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'room_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+        ], [
+            'main_image.max' => 'La photo principale ne doit pas dépasser 10 Mo.',
+            'room_images.*.max' => 'Chaque image de chambre ne doit pas dépasser 10 Mo. Compressez ou réduisez la taille de vos images si besoin.',
         ]);
         
         // Upload main image
@@ -97,8 +100,11 @@ class HotelController extends Controller
             'city' => 'required|in:mecca,medina',
             'stars' => 'required|integer|min:1|max:5',
             'distance_haram' => 'nullable|numeric|min:0',
-            'main_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'room_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'room_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+        ], [
+            'main_image.max' => 'La photo principale ne doit pas dépasser 10 Mo.',
+            'room_images.*.max' => 'Chaque image de chambre ne doit pas dépasser 10 Mo. Compressez ou réduisez la taille de vos images si besoin.',
         ]);
         
         // Upload main image

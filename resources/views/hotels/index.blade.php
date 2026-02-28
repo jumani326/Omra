@@ -48,70 +48,62 @@
         </form>
     </div>
 
-    <!-- Liste des Hôtels -->
+    <!-- Liste des Hôtels - Cartes type cadre visuel -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($hotels as $hotel)
-        <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
-            <!-- Image principale -->
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
+            <!-- Cadre image : photo en tête -->
+            <a href="{{ route('hotels.show', $hotel) }}" class="block focus:outline-none">
             @if($hotel->main_image)
-            <div class="h-48 bg-cover bg-center relative" style="background-image: url('{{ Storage::url($hotel->main_image) }}')">
-                <div class="absolute inset-0 bg-gradient-to-t from-primary-green to-transparent"></div>
-                <div class="relative h-full p-4 flex items-end text-white">
-            @else
-            <div class="bg-gradient-to-r from-primary-green to-dark-green p-4 text-white">
-            @endif
-                <div class="flex justify-between items-start w-full">
-                    <div>
-                        <h3 class="text-lg font-bold">{{ $hotel->name }}</h3>
-                        <p class="text-sm opacity-90">{{ ucfirst($hotel->city) }}</p>
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        @for($i = 0; $i < $hotel->stars; $i++)
-                        <svg class="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.363-1.118l-2.8-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        @endfor
-                    </div>
-                </div>
-            @if($hotel->main_image)
+            <div class="h-56 rounded-t-2xl overflow-hidden">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($hotel->main_image) }}" alt="{{ $hotel->name }}" class="w-full h-full object-cover">
             </div>
             @else
+            <div class="h-56 bg-gradient-to-br from-primary-green to-dark-green flex items-center justify-center rounded-t-2xl">
+                <svg class="w-20 h-20 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
             </div>
             @endif
+            </a>
 
-            <!-- Détails -->
-            <div class="p-4">
-                <div class="space-y-2 mb-4">
+            <!-- Étoiles (sous l'image) -->
+            <div class="px-5 pt-4 flex items-center">
+                @for($i = 0; $i < $hotel->stars; $i++)
+                <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.363 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.363-1.118l-2.8-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                @endfor
+            </div>
+
+            <!-- Nom et lieu -->
+            <div class="px-5 pt-2 pb-1 flex-1">
+                <h3 class="text-lg font-bold text-gray-800 leading-tight">{{ $hotel->name }}</h3>
+                <p class="text-sm text-gray-500 mt-0.5">{{ $hotel->city == 'mecca' ? 'La Mecque' : 'Médine' }}</p>
+            </div>
+
+            <!-- Barre infos bas (style teal) -->
+            <div class="px-5 py-3 flex items-center justify-between border-t border-gray-100 bg-gray-50/50">
+                <span class="text-sm font-semibold text-primary-green">
                     @if($hotel->distance_haram)
-                    <div class="flex items-center text-gray-600">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <span class="text-sm">{{ $hotel->distance_haram }}m du Haram</span>
-                    </div>
+                    {{ $hotel->distance_haram }} m du Haram
+                    @else
+                    {{ $hotel->packagesMecca->count() + $hotel->packagesMedina->count() }} forfait(s)
                     @endif
-                    
-                    <div class="flex items-center text-gray-600">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                        </svg>
-                        <span class="text-sm">{{ $hotel->packagesMecca->count() + $hotel->packagesMedina->count() }} forfait(s)</span>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex space-x-2">
-                    <a href="{{ route('hotels.show', $hotel) }}" class="flex-1 bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-dark-green transition text-center text-sm">
-                        Voir
-                    </a>
-                    @can('update', $hotel)
-                    <a href="{{ route('hotels.edit', $hotel) }}" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-center text-sm">
-                        Modifier
-                    </a>
-                    @endcan
-                </div>
+                </span>
+                <a href="{{ route('hotels.show', $hotel) }}" class="text-sm font-semibold text-primary-green hover:text-dark-green flex items-center gap-1">
+                    Voir
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                </a>
             </div>
+
+            @can('update', $hotel)
+            <div class="px-5 pb-3">
+                <a href="{{ route('hotels.edit', $hotel) }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Modifier</a>
+            </div>
+            @endcan
         </div>
         @empty
         <div class="col-span-full bg-white rounded-lg shadow p-12 text-center">

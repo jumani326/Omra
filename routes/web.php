@@ -24,10 +24,20 @@ Route::middleware('auth')->group(function () {
 
 // Routes protégées
 Route::middleware(['auth'])->group(function () {
+    Route::post('/branch/switch', function (\Illuminate\Http\Request $request) {
+        if (!auth()->user()->hasRole('Super Admin Agence')) {
+            abort(403);
+        }
+        $request->validate(['branch_id' => 'nullable|exists:branches,id']);
+        session(['current_branch_id' => $request->branch_id]);
+        return redirect()->back();
+    })->name('branch.switch');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Module Pèlerins
     Route::resource('pilgrims', \App\Http\Controllers\PilgrimController::class);
+    Route::post('pilgrims/{pilgrim}/transfer', [\App\Http\Controllers\PilgrimController::class, 'transfer'])->name('pilgrims.transfer');
     
     // Module Forfaits
     Route::resource('packages', \App\Http\Controllers\PackageController::class);
@@ -35,9 +45,14 @@ Route::middleware(['auth'])->group(function () {
     
     // Module Hôtels
     Route::resource('hotels', \App\Http\Controllers\HotelController::class);
-    
-    // Routes pour les autres modules (à créer aux Jours 4-5)
-    // Route::resource('visas', VisaController::class);
-    // Route::resource('payments', PaymentController::class);
-    // Route::resource('users', UserController::class);
+
+    // Module Visas (Jour 4)
+    Route::resource('visas', \App\Http\Controllers\VisaController::class);
+
+    // Module Paiements / Finance (Jour 4)
+    Route::resource('payments', \App\Http\Controllers\PaymentController::class);
+    Route::get('payments/{payment}/invoice', [\App\Http\Controllers\PaymentController::class, 'invoice'])->name('payments.invoice');
+
+    // Module Utilisateurs (Jour 2/5)
+    Route::resource('users', \App\Http\Controllers\UserController::class);
 });

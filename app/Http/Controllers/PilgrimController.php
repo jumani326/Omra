@@ -46,14 +46,12 @@ class PilgrimController extends Controller
     public function show(int $id): View
     {
         $pilgrim = $this->service->findById($id);
-        
         if (!$pilgrim) {
             abort(404);
         }
-        
         Gate::authorize('view', $pilgrim);
-        
-        return view('pilgrims.show', compact('pilgrim'));
+        $branches = \App\Models\Branch::orderBy('name')->get();
+        return view('pilgrims.show', compact('pilgrim', 'branches'));
     }
 
     public function edit(int $id): View
@@ -93,5 +91,17 @@ class PilgrimController extends Controller
         
         return redirect()->route('pilgrims.index')
             ->with('success', 'Pèlerin supprimé avec succès.');
+    }
+
+    public function transfer(Request $request, \App\Models\Pilgrim $pilgrim): RedirectResponse
+    {
+        if (!auth()->user()->hasRole('Super Admin Agence')) {
+            abort(403, 'Seul le Super Admin peut transférer un pèlerin.');
+        }
+        $request->validate(['branch_id' => 'required|exists:branches,id']);
+        if ($this->service->transferToBranch($pilgrim, (int) $request->branch_id)) {
+            return redirect()->route('pilgrims.show', $pilgrim)->with('success', 'Pèlerin transféré vers la nouvelle branche.');
+        }
+        return redirect()->back()->with('info', 'Le pèlerin est déjà dans cette branche.');
     }
 }

@@ -16,75 +16,80 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
-        // Filtre par branche si nécessaire
-        $branchFilter = function($query) use ($user) {
-            if ($user->branch_id && !$user->hasRole('Super Admin Agence')) {
-                $query->where('branch_id', $user->branch_id);
+        $branchId = $user->hasRole('Super Admin Agence') ? session('current_branch_id') : $user->branch_id;
+
+        $scopeBranch = function ($query, $column = 'branch_id') use ($branchId) {
+            if ($branchId) {
+                if ($column === 'branch_id') {
+                    $query->where('branch_id', $branchId);
+                } else {
+                    $query->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId));
+                }
             }
         };
 
         // Total Pilgrims
-        $totalPilgrims = Pilgrim::when($user->branch_id && !$user->hasRole('Super Admin Agence'), 
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )->count();
+        $totalPilgrims = Pilgrim::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->count();
 
-        // Monthly Revenue (somme des paiements du mois en cours)
-        $monthlyRevenue = Payment::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->whereHas('pilgrim', fn($p) => $p->where('branch_id', $user->branch_id))
-        )
-        ->where('status', 'completed')
-        ->whereMonth('created_at', now()->month)
-        ->whereYear('created_at', now()->year)
-        ->sum('amount');
+        // Monthly Revenue
+        $monthlyRevenue = Payment::when($branchId, fn ($q) => $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId)))
+            ->where('status', 'completed')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('amount');
 
         // Visa Acceptance Rate
-        $totalVisas = Visa::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->whereHas('pilgrim', fn($p) => $p->where('branch_id', $user->branch_id))
-        )->count();
-        
-        $approvedVisas = Visa::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->whereHas('pilgrim', fn($p) => $p->where('branch_id', $user->branch_id))
-        )
-        ->where('status', 'approved')
-        ->count();
-        
+        $totalVisas = Visa::when($branchId, fn ($q) => $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId)))->count();
+        $approvedVisas = Visa::when($branchId, fn ($q) => $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId)))
+            ->where('status', 'approved')
+            ->count();
         $visaAcceptanceRate = $totalVisas > 0 ? ($approvedVisas / $totalVisas) * 100 : 0;
 
-        // Active Groups (packages avec des pèlerins)
-        $activeGroups = Package::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )
-        ->whereHas('pilgrims')
-        ->where('departure_date', '>=', now())
-        ->count();
+        // Active Groups
+        $activeGroups = Package::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->whereHas('pilgrims')
+            ->where('departure_date', '>=', now())
+            ->count();
 
         // Recent Activities
-        $recentActivities = ActivityLog::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->whereHas('pilgrim', fn($p) => $p->where('branch_id', $user->branch_id))
-        )
-        ->with(['user', 'pilgrim.package'])
-        ->orderBy('created_at', 'desc')
-        ->limit(5)
-        ->get()
-        ->map(function($log) {
-            return [
+        $recentActivities = ActivityLog::when($branchId, fn ($q) => $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId)))
+            ->with(['user', 'pilgrim.package'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(fn ($log) => [
                 'description' => $log->description,
                 'time' => $log->created_at->diffForHumans(),
                 'group' => $log->pilgrim && $log->pilgrim->package ? $log->pilgrim->package->name : 'N/A',
-            ];
-        })
-        ->toArray();
+            ])
+            ->toArray();
 
-        // Active Pilgrims (derniers pèlerins avec statut actif)
-        $activePilgrims = Pilgrim::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )
-        ->whereIn('status', ['registered', 'dossier_complete', 'visa_approved'])
-        ->with('package')
-        ->orderBy('created_at', 'desc')
-        ->limit(5)
-        ->get();
+        // Active Pilgrims
+        $activePilgrims = Pilgrim::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->whereIn('status', ['registered', 'dossier_complete', 'visa_approved'])
+            ->with('package')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Données pour graphiques (12 derniers mois revenus, distribution visas)
+        $revenueByMonth = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $revenueByMonth[] = [
+                'label' => $date->translatedFormat('M Y'),
+                'value' => (int) Payment::when($branchId, fn ($q) => $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId)))
+                    ->where('status', 'completed')
+                    ->whereMonth('payment_date', $date->month)
+                    ->whereYear('payment_date', $date->year)
+                    ->sum('amount'),
+            ];
+        }
+        $visaDistribution = Visa::when($branchId, fn ($q) => $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId)))
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
 
         return view('dashboard.index', compact(
             'totalPilgrims',
@@ -92,7 +97,9 @@ class DashboardController extends Controller
             'visaAcceptanceRate',
             'activeGroups',
             'recentActivities',
-            'activePilgrims'
+            'activePilgrims',
+            'revenueByMonth',
+            'visaDistribution'
         ));
     }
 }
