@@ -11,11 +11,18 @@
             <h1 class="text-2xl font-bold text-gray-900">Pèlerins</h1>
             <p class="text-gray-600 mt-1">Gérez tous vos pèlerins</p>
         </div>
-        @can('create', App\Models\Pilgrim::class)
-        <a href="{{ route('pilgrims.create') }}" class="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-dark-green transition">
-            + Nouveau Pèlerin
-        </a>
-        @endcan
+        <div class="flex gap-2">
+            @can('viewAny', App\Models\Pilgrim::class)
+            <a href="{{ route('pilgrims.export', request()->query()) }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                Export CSV
+            </a>
+            @endcan
+            @can('create', App\Models\Pilgrim::class)
+            <a href="{{ route('pilgrims.create') }}" class="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-dark-green transition">
+                + Nouveau Pèlerin
+            </a>
+            @endcan
+        </div>
     </div>
 
     <!-- Filtres -->

@@ -56,11 +56,9 @@ class PilgrimPolicy
             return true;
         }
 
-        // Pèlerin voit seulement son propre dossier
+        // Pèlerin voit seulement son propre dossier (liaison par email)
         if ($user->hasRole('Pèlerin (Client)')) {
-            // À implémenter : vérifier que le user_id correspond au pilgrim_id
-            // Pour l'instant, on retourne false car la relation n'est pas encore établie
-            return false;
+            return $pilgrim->email === $user->email;
         }
 
         return false;

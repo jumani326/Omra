@@ -5,6 +5,11 @@
 
 @section('content')
 <div class="space-y-6">
+    @if(!empty($isSupervision))
+    <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-amber-800 text-sm">
+        <strong>Vue supervision</strong> — Statistiques agrégées sur toutes les agences et branches.
+    </div>
+    @endif
     <!-- Header avec boutons d'action -->
     <div class="flex justify-between items-center">
         <div>
@@ -127,6 +132,14 @@
             </div>
         </div>
     </div>
+    @if(!empty($pilgrimsByBranch) && count($pilgrimsByBranch) > 0)
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Pèlerins par branche</h2>
+        <div class="h-64">
+            <canvas id="chartPilgrimsByBranch"></canvas>
+        </div>
+    </div>
+    @endif
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -164,6 +177,23 @@
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
                 });
             }
+            var pilgrimsByBranchData = @json($pilgrimsByBranch ?? []);
+            if (pilgrimsByBranchData.length && document.getElementById('chartPilgrimsByBranch')) {
+                new Chart(document.getElementById('chartPilgrimsByBranch'), {
+                    type: 'bar',
+                    data: {
+                        labels: pilgrimsByBranchData.map(function(d) { return d.label; }),
+                        datasets: [{
+                            label: 'Pèlerins',
+                            data: pilgrimsByBranchData.map(function(d) { return d.value; }),
+                            backgroundColor: 'rgba(15, 63, 46, 0.7)',
+                            borderColor: '#0F3F2E',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
         });
     </script>
 
@@ -176,7 +206,7 @@
                 <a href="#" class="text-sm text-primary-green hover:underline">View All</a>
             </div>
             <div class="space-y-4">
-                @forelse($recentActivities ?? [] as $activity)
+                @forelse(($recentActivities ?? []) as $activity)
                 <div class="flex items-start space-x-3">
                     <div class="bg-green-100 p-2 rounded-lg">
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +262,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($activePilgrims ?? [] as $pilgrim)
+                        @forelse(($activePilgrims ?? []) as $pilgrim)
                         <tr class="border-b hover:bg-gray-50">
                             <td class="py-3">
                                 <div class="flex items-center space-x-3">

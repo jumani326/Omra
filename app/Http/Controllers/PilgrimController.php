@@ -22,10 +22,41 @@ class PilgrimController extends Controller
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', \App\Models\Pilgrim::class);
-        
         $pilgrims = $this->service->getAll($request->all());
-        
         return view('pilgrims.index', compact('pilgrims'));
+    }
+
+    public function export(Request $request)
+    {
+        Gate::authorize('viewAny', \App\Models\Pilgrim::class);
+        $pilgrims = $this->service->getAll($request->all(), 50000)->getCollection();
+        $filename = 'pelerins-' . date('Y-m-d-His') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+        $callback = function () use ($pilgrims) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8 pour Excel
+            fputcsv($out, ['ID', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Passeport', 'Nationalité', 'Statut', 'Branche', 'Forfait', 'Date inscription'], ';');
+            foreach ($pilgrims as $p) {
+                fputcsv($out, [
+                    $p->id,
+                    $p->first_name,
+                    $p->last_name,
+                    $p->email ?? '',
+                    $p->phone ?? '',
+                    $p->passport_no,
+                    $p->nationality ?? '',
+                    ucfirst(str_replace('_', ' ', $p->status)),
+                    $p->branch?->name ?? '—',
+                    $p->package?->name ?? '—',
+                    $p->created_at?->format('d/m/Y H:i') ?? '',
+                ], ';');
+            }
+            fclose($out);
+        };
+        return response()->stream($callback, 200, $headers);
     }
 
     public function create(): View

@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\Auth\LoginController;
 
 // Redirection racine vers dashboard si authentifié
@@ -34,8 +36,20 @@ Route::middleware(['auth'])->group(function () {
     })->name('branch.switch');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
+    // Espace client (Pèlerin)
+    // Espace client (Pèlerin) — contrôle d'accès dans ClientController
+    Route::prefix('client')->name('client.')->group(function () {
+        Route::get('package/{package}/choose', [ClientController::class, 'choosePackage'])->name('package.choose');
+        Route::post('package/{package}/store', [ClientController::class, 'storeChoosePackage'])->name('package.store');
+    });
+
+    // Chatbot (client)
+    Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage'])->name('chatbot.message');
+    Route::get('/chatbot/session', [ChatbotController::class, 'session'])->name('chatbot.session');
+
     // Module Pèlerins
+    Route::get('pilgrims/export', [\App\Http\Controllers\PilgrimController::class, 'export'])->name('pilgrims.export');
     Route::resource('pilgrims', \App\Http\Controllers\PilgrimController::class);
     Route::post('pilgrims/{pilgrim}/transfer', [\App\Http\Controllers\PilgrimController::class, 'transfer'])->name('pilgrims.transfer');
     
