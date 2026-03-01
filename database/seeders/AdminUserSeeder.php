@@ -3,47 +3,91 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Agency;
 use App\Models\Branch;
+use App\Models\Group;
+use App\Models\Guide;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
+    /**
+     * Crée les utilisateurs de test pour les 4 rôles.
+     * Ministère : créé automatiquement (pas d'inscription publique).
+     * Agence : liée à une agence (validée ou en attente).
+     */
     public function run(): void
     {
-        // Récupérer la première branche
+        $agency = Agency::first();
         $branch = Branch::first();
 
-        if (!$branch) {
-            $this->command->error('Aucune branche trouvée. Exécutez d\'abord AgencySeeder.');
+        // ——— MINISTÈRE (créé automatiquement) ———
+        User::firstOrCreate(
+            ['email' => 'ministere@omra.test'],
+            [
+                'name' => 'Ministère',
+                'password' => Hash::make('password'),
+                'active' => true,
+            ]
+        )->assignRole('ministere');
+
+        $this->command->info('Ministère créé : ministere@omra.test (Mot de passe: password)');
+
+        if (! $agency || ! $branch) {
+            $this->command->warn('Aucune agence/branche. Utilisateurs agence/guide non créés.');
             return;
         }
 
-        // Créer Super Admin
-        $superAdmin = User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@omra.test',
-            'password' => Hash::make('password'),
-            'branch_id' => $branch->id,
-            'active' => true,
-        ]);
-        $superAdmin->assignRole('Super Admin Agence');
+        // ——— AGENCE ———
+        $agenceUser = User::firstOrCreate(
+            ['email' => 'agence@omra.test'],
+            [
+                'name' => 'Admin Agence',
+                'password' => Hash::make('password'),
+                'branch_id' => $branch->id,
+                'agence_id' => $agency->id,
+                'active' => true,
+            ]
+        );
+        if (! $agenceUser->hasRole('agence')) {
+            $agenceUser->assignRole('agence');
+        }
+        $this->command->info('Agence créée : agence@omra.test (Mot de passe: password)');
 
-        // Mettre à jour le manager de la branche
-        $branch->update(['manager_id' => $superAdmin->id]);
+        // ——— GUIDE (créé par l'agence, appartient à une agence) ———
+        $guideUser = User::firstOrCreate(
+            ['email' => 'guide@omra.test'],
+            [
+                'name' => 'Guide Test',
+                'password' => Hash::make('password'),
+                'agence_id' => $agency->id,
+                'active' => true,
+            ]
+        );
+        if (! $guideUser->hasRole('guide')) {
+            $guideUser->assignRole('guide');
+        }
+        $group = Group::firstOrCreate(['agency_id' => $agency->id, 'name' => 'Groupe 1']);
+        Guide::firstOrCreate(
+            ['user_id' => $guideUser->id],
+            ['user_id' => $guideUser->id, 'agency_id' => $agency->id, 'group_id' => $group->id]
+        );
+        $this->command->info('Guide créé : guide@omra.test (Mot de passe: password)');
 
-        $this->command->info("Super Admin créé : {$superAdmin->email} (Mot de passe: password)");
-
-        // Créer Admin Branche
-        $adminBranche = User::create([
-            'name' => 'Admin Branche',
-            'email' => 'admin.branche@omra.test',
-            'password' => Hash::make('password'),
-            'branch_id' => $branch->id,
-            'active' => true,
-        ]);
-        $adminBranche->assignRole('Admin Branche');
-
-        $this->command->info("Admin Branche créé : {$adminBranche->email} (Mot de passe: password)");
+        // ——— PÈLERIN ———
+        $pelerinUser = User::firstOrCreate(
+            ['email' => 'pelerin@omra.test'],
+            [
+                'name' => 'Pèlerin Test',
+                'password' => Hash::make('password'),
+                'active' => true,
+                'activated_at' => now(),
+            ]
+        );
+        if (! $pelerinUser->hasRole('pelerin')) {
+            $pelerinUser->assignRole('pelerin');
+        }
+        $this->command->info('Pèlerin créé : pelerin@omra.test (Mot de passe: password)');
     }
 }

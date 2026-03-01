@@ -273,80 +273,200 @@ app/
   - users, agencies, branches, pilgrims, packages, hotels
 - ✅ Utiliser `deleted_at` avec `SoftDeletes` trait
 
+### Tables liées aux 4 rôles (agence, ministère, guide, pèlerin)
+
+#### Table: `users` (champs additionnels)
+```sql
+- agence_id (FK → agencies, nullable) — pour guide et pèlerin
+- activation_code (string, nullable)
+- activation_code_expires_at (timestamp, nullable)
+- activated_at (timestamp, nullable)
+-- Rôle géré par Spatie (role_has_*), pas de colonne role
+```
+
+#### Table: `agencies` (champs additionnels)
+```sql
+- validated (boolean, default false)
+- validated_by (FK → users, nullable)
+- validated_at (timestamp, nullable)
+```
+
+#### Table: `groups`
+```sql
+- id (PK)
+- agency_id (FK → agencies)
+- name (string)
+- timestamps
+- index(agency_id)
+```
+
+#### Table: `guides`
+```sql
+- id (PK)
+- user_id (FK → users, unique) — un utilisateur = un guide
+- agency_id (FK → agencies) — un guide n'appartient qu'à une agence
+- group_id (FK → groups, nullable) — groupe assigné
+- timestamps
+- index(agency_id), index(group_id)
+```
+
+#### Table: `pilgrims` (champs additionnels)
+```sql
+- user_id (FK → users, nullable) — si pèlerin inscrit via espace client
+- agence_id (FK → agencies) — agence qui gère le pèlerin
+- group_id (FK → groups, nullable)
+- guide_id (FK → guides, nullable)
+- index(agence_id), index(group_id), index(guide_id)
+```
+
+#### Table: `checkins`
+```sql
+- id (PK)
+- pilgrim_id (FK → pilgrims)
+- guide_id (FK → guides)
+- type (enum: 'checkin', 'checkout')
+- created_at (timestamp)
+- index(pilgrim_id), index(guide_id)
+```
+
 ---
 
 ## 👥 RÔLES ET PERMISSIONS {#rôles-et-permissions}
 
-### Hiérarchie des Rôles
+### Règles d'inscription et de création des comptes
 
-#### SPHÈRE MINISTÈRE
-1. **Superviseur Ministériel National**
-   - Dashboard : Lecture seule consolidé
-   - Pèlerins : Statistiques uniquement
-   - Finance : Statistiques consolidées
-   - Visas : Statistiques uniquement
-   - Chatbot : Aucun accès
+| Acteur | Création du compte | Validation / Activation |
+|--------|--------------------|-------------------------|
+| **Ministère** | Créé **automatiquement** (seeder ou commande) — pas d'inscription publique | N/A |
+| **Agence** | Inscription avec **email valide** (formulaire public) | Doit être **validée par le ministère** avant accès complet |
+| **Guide** | **Créé par l'agence** — un guide n'appartient **qu'à une seule agence** | Compte activé par l'agence |
+| **Pèlerin** | Inscription avec **email valide** (formulaire public) | Reçoit un **code d'activation par email** ; notifications par **email** et **dans le système** |
 
-2. **Auditeur National**
-   - Accès lecture seule sur toutes les agences
-   - Export rapports nationaux
+### Hiérarchie des Rôles — 4 rôles uniquement
 
-#### SPHÈRE AGENCE
-1. **Super Admin Agence**
-   - Dashboard : Complet (toutes branches)
-   - Pèlerins : CRUD complet (toutes branches)
-   - Finance : Complet (toutes branches)
-   - Visas : Complet (toutes branches)
-   - Chatbot : Configuration
+Le système ne comporte **que ces 4 rôles** : `agence`, `ministere`, `guide`, `pelerin`. Tous les anciens rôles (Super Admin Agence, Admin Branche, Agent Commercial, etc.) sont supprimés.
 
-2. **Admin Branche**
-   - Dashboard : Sa branche uniquement
-   - Pèlerins : CRUD sa branche
-   - Finance : Sa branche
-   - Visas : Sa branche
-   - Chatbot : Aucun accès
+---
 
-3. **Agent Commercial**
-   - Dashboard : Simplifié
-   - Pèlerins : CRUD + vente
-   - Finance : Lecture seule
-   - Visas : Lecture seule
-   - Chatbot : Aucun accès
+### 1. AGENCE
 
-4. **Comptable**
-   - Dashboard : Financier uniquement
-   - Pèlerins : Lecture seule
-   - Finance : CRUD complet
-   - Visas : Aucun accès
-   - Chatbot : Aucun accès
+**Accès complet à sa propre gestion uniquement** (données filtrées par `agence_id`).
 
-5. **Officier Visa**
-   - Dashboard : Module Visa uniquement
-   - Pèlerins : Lecture seule
-   - Finance : Aucun accès
-   - Visas : CRUD complet
-   - Chatbot : Aucun accès
+| Module | Droits |
+|--------|--------|
+| **Comptabilité** | Gestion des paiements des pèlerins, suivi des transactions, rapports financiers de l'agence, états des comptes |
+| **Visa** | Demandes de visa pour ses pèlerins, suivi des statuts, upload des documents requis, historique des visas |
+| **Guides** | Gestion de **ses** guides : création / modification / suppression, assignation aux groupes, planning (un guide n'appartient qu'à une agence) |
+| **Pèlerins** | Gestion complète de **ses** pèlerins : inscription, modification, assignation aux groupes, suivi des paiements, export des listes |
 
-6. **Guide / Mourchid**
-   - Dashboard : Son groupe assigné uniquement
-   - Pèlerins : Son groupe (check-in/check-out)
-   - Finance : Aucun accès
-   - Visas : Aucun accès
-   - Chatbot : Aucun accès
+**Dashboard Agence** : Statistiques de l'agence (nombre de pèlerins, guides, groupes), état des visas en cours, situation comptable, alertes et notifications.
 
-#### SPHÈRE CLIENT
-1. **Pèlerin (Client)**
-   - Dashboard : Espace personnel
-   - Pèlerins : Son dossier uniquement
-   - Finance : Ses paiements
-   - Visas : Son statut
-   - Chatbot : Accès complet
+**Menu Agence** : Dashboard · Pèlerins · Guides · Comptabilité · Visas
 
-### Implémentation Permissions
-- Utiliser **Spatie Laravel Permission**
-- Créer des Policies pour chaque ressource
-- Vérifier avec `$this->authorize()` dans chaque action
-- **JAMAIS** de vérification manuelle des rôles dans les vues
+---
+
+### 2. MINISTÈRE
+
+**Supervision et validation** — pas de modification directe des données opérationnelles.
+
+| Module | Droits |
+|--------|--------|
+| **Audit** | Vue globale de toutes les agences, rapports d'audit, statistiques générales, traçabilité des actions |
+| **Gestion des agences** | Liste de toutes les agences, **validation / activation** des agences, suspension / désactivation, visualisation des infos, historique par agence |
+| **Validation des visas** | Liste de toutes les demandes, approbation / rejet, filtrage par agence, export des rapports |
+| **Pèlerins (vue globale)** | Consultation de tous les pèlerins par agence, filtres (agence, statut, date), statistiques par agence — **pas de modification directe** |
+
+**Dashboard Ministère** : Nombre total d'agences (actives / inactives), nombre total de pèlerins par agence, demandes de visa en attente, statistiques globales, graphiques et rapports.
+
+**Menu Ministère** : Dashboard · Agences · Validation Visas · Pèlerins (Global) · Audit
+
+**Création** : Le ministère est **créé automatiquement** (seeder ou commande Artisan), pas d'inscription publique.
+
+---
+
+### 3. GUIDE
+
+**Vue limitée à son groupe assigné uniquement.** Le guide est **créé par l'agence** et **n'appartient qu'à une seule agence**.
+
+| Module | Droits |
+|--------|--------|
+| **Dashboard** | Informations de **son groupe** uniquement : nombre de pèlerins, planning des activités, check-in / check-out du jour |
+| **Pèlerins de son groupe** | Liste des pèlerins de son groupe, détails en **lecture seule**, **Check-in (arrivée)** et **Check-out (départ)** uniquement ; vue de l'état de présence. **Aucune** modification des informations personnelles, aucun ajout/suppression de pèlerins |
+
+**Restrictions** : Ne voit **que** son groupe ; ne peut pas voir les autres guides ni les autres groupes. Actions limitées : check-in / check-out uniquement.
+
+**Menu Guide** : Dashboard · Mon Groupe
+
+---
+
+### 4. PÈLERIN
+
+**Vue personnelle uniquement** — lecture seule de ses propres données.
+
+| Module | Droits |
+|--------|--------|
+| **Dashboard personnel** | Ses informations, statut de son visa, son groupe assigné, son guide, état de ses paiements |
+| **Consultation** | Voir ses documents, son planning, notifications personnelles (par **email** et **dans le système**) |
+
+**Restrictions** : Aucune modification possible ; vue lecture seule.
+
+**Inscription** : Inscription avec **email valide** ; réception du **code d'activation par email** ; notifications par **email** et **dans le système**.
+
+**Menu Pèlerin** : Mon Profil
+
+---
+
+### Permissions techniques (backend)
+
+```php
+// Constantes (ex. config/roles.php ou Modèle User)
+const ROLES = ['agence', 'ministere', 'guide', 'pelerin'];
+
+const PERMISSIONS = [
+    'agence' => [
+        'manage_own_pilgrims', 'manage_own_guides', 'manage_own_accounting',
+        'manage_own_visas', 'view_own_data'
+    ],
+    'ministere' => [
+        'audit_all', 'manage_agencies', 'validate_agencies', 'validate_visas',
+        'view_all_pilgrims', 'view_statistics'
+    ],
+    'guide' => [
+        'view_own_group', 'checkin_checkout', 'view_group_pilgrims'
+    ],
+    'pelerin' => ['view_own_data']
+];
+```
+
+### Routes par rôle (Laravel)
+
+- **Agence** : `agence/dashboard`, `agence/pilgrims`, `agence/guides`, `agence/accounting`, `agence/visas`
+- **Ministère** : `ministere/dashboard`, `ministere/agencies`, `ministere/agencies/{id}/validate`, `ministere/visas`, `ministere/visas/{id}/validate`, `ministere/pilgrims`, `ministere/audit`
+- **Guide** : `guide/dashboard`, `guide/group`, `guide/pilgrims`, `guide/checkin/{pilgrimId}`, `guide/checkout/{pilgrimId}`
+- **Pèlerin** : `pelerin/dashboard`, `pelerin/profile`
+
+### Middlewares
+
+- **CheckRole(allowedRoles)** : vérifie que `req->user()->role` (ou Spatie) est dans la liste ; sinon 403.
+- **CheckPermission(permission)** : vérifie que l'utilisateur a la permission ; sinon 403.
+- Toujours filtrer en base : **agence** par `agence_id`, **guide** par `group_id` (et donc par son `guide_id`).
+
+### Schéma base de données (extrait)
+
+- **users** : `id`, `email`, `password`, `role` (Spatie), `agence_id` (nullable), `active`, `activation_code`, `activation_code_expires_at`, `activated_at`, …
+- **agencies** : `id`, `name`, `validated` (boolean), `validated_by` (FK users), `validated_at`, …
+- **groups** : `id`, `agency_id`, `name`, …
+- **guides** : `id`, `user_id`, `agency_id`, `group_id` (groupe assigné)
+- **pilgrims** : `id`, `user_id` (nullable), `agence_id`, `group_id`, `guide_id`, …
+- **checkins** : `id`, `pilgrim_id`, `guide_id`, `type` (checkin/checkout), `created_at`
+- **Audit** : traçabilité (qui, quoi, quand) sur actions sensibles.
+
+### Implémentation
+
+- Utiliser **Spatie Laravel Permission** avec les 4 rôles uniquement.
+- Créer des **Policies** pour chaque ressource et vérifier avec `$this->authorize()`.
+- **JAMAIS** de vérification manuelle des rôles dans les vues ; utiliser `@can` / `@role` ou Policies.
+- **Isolation des données** : requêtes Agence filtrées par `agence_id` ; Guide filtrées par `group_id` (son groupe).
 
 ---
 
@@ -441,7 +561,7 @@ app/
 
 ---
 
-### 4.4 — Module Financier (Comptable)
+### 4.4 — Module Financier
 
 #### Fonctionnalités
 - ✅ Paiements multiples
@@ -458,7 +578,7 @@ app/
   - Forecast (prévisionnel)
   - Export PDF/Excel
 
-#### Détails Comptable
+#### Détails financiers
 - Enregistrement et validation des paiements pèlerins
 - Gestion des remboursements, avoirs et échéanciers
 - Calcul automatique des commissions agents à la validation
@@ -486,7 +606,7 @@ app/
 - ✅ Isolation des données
   - Un agent ne voit que sa branche
   - Scope automatique dans Repository
-- ✅ Consolidation Super Admin
+- ✅ Consolidation Agence
   - Vue agrégée toutes branches
 - ✅ Transfer de pèlerin
   - Entre branches avec log de traçabilité
@@ -625,15 +745,15 @@ app/
 
 | Événement | Canal | Destinataire |
 |-----------|-------|--------------|
-| Inscription pèlerin validée | Email + SMS | Client + Agent |
-| Dossier complet reçu | Email | Officier Visa + Client |
-| Visa déposé | Email + Push | Client + Admin |
-| Visa accepté / refusé | Email + SMS + Push | Client + Tous rôles agence |
-| Paiement reçu | Email (reçu PDF) | Client + Comptable |
-| Solde impayé J-15 | Email + SMS | Client + Agent |
-| Départ J-7 | Email (guide complet) | Client + Guide |
-| Expiration visa imminente | Email | Officier Visa + Admin |
-| Retour du pèlerinage | Email (questionnaire) | Client |
+| Inscription pèlerin validée | Email + SMS | Pèlerin + Agence |
+| Dossier complet reçu | Email | Agence + Pèlerin |
+| Visa déposé | Email + Push | Pèlerin + Agence |
+| Visa accepté / refusé | Email + SMS + Push | Pèlerin + Agence |
+| Paiement reçu | Email (reçu PDF) | Pèlerin + Agence |
+| Solde impayé J-15 | Email + SMS | Pèlerin + Agence |
+| Départ J-7 | Email (guide complet) | Pèlerin + Guide |
+| Expiration visa imminente | Email | Agence + Pèlerin |
+| Retour du pèlerinage | Email (questionnaire) | Pèlerin |
 
 ### Documents Générés Automatiquement
 - ✅ **Contrat PDF** signé électroniquement (DomPDF) à la validation inscription
@@ -741,7 +861,7 @@ app/Jobs/
 ### 🟠 JOUR 2 (MARDI) : AUTHENTIFICATION & RÔLES + LAYOUT
 
 #### Matin (4h)
-- [ ] **Création rôles et permissions** (tous les rôles du cahier des charges)
+- [ ] **Création rôles et permissions** (les 4 rôles : Agence, Ministère, Guide, Pèlerin)
 - [ ] **Policies de base** (PilgrimPolicy, PackagePolicy, VisaPolicy, PaymentPolicy)
 - [ ] **Interface gestion utilisateurs** (CRUD avec assignation rôles)
 - [ ] **2FA basique** (optionnel si temps manque, peut être ajouté post-déploiement)
@@ -823,7 +943,7 @@ app/Jobs/
   - [ ] Scope Eloquent sur tous les Models
   - [ ] Middleware BranchScope actif
 - [ ] **Transfer pèlerin** entre branches (avec log)
-- [ ] **Consolidation Super Admin** (vue agrégée toutes branches)
+- [ ] **Consolidation Agence** (vue agrégée toutes branches)
 
 #### Après-midi (4h) - Chatbot IA
 - [ ] **Intégration OpenAI API** (GPT-4o-mini)
@@ -894,7 +1014,7 @@ app/Jobs/
   - [ ] CRUD Paiements
   - [ ] Chatbot (scénarios de base)
 - [ ] **Corrections bugs** critiques
-- [ ] **Vérification permissions** (tous les rôles)
+- [ ] **Vérification permissions** (les 4 rôles)
 
 #### Soir (3h) - Déploiement Production
 - [ ] **Configuration production** (.env production)
@@ -1146,8 +1266,9 @@ app/Jobs/
 
 ---
 
-**Document créé le** : {{ date }}
-**Version du guide** : 1.0
+**Document créé le** : 2026
+**Version du guide** : 2.0
+**Dernière mise à jour** : Structure des 4 rôles (agence, ministère, guide, pèlerin) — inscription agence/pèlerin, validation ministère, guide créé par l'agence.
 **Basé sur** : Cahier des Charges Technique & Fonctionnel UMS v2.0
 
 ---

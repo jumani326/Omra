@@ -17,7 +17,11 @@ class User extends Authenticatable
         'email',
         'password',
         'branch_id',
+        'agence_id',
         'active',
+        'activation_code',
+        'activation_code_expires_at',
+        'activated_at',
         '2fa_secret',
     ];
 
@@ -33,6 +37,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'active' => 'boolean',
+            'activation_code_expires_at' => 'datetime',
+            'activated_at' => 'datetime',
         ];
     }
 
@@ -40,6 +46,16 @@ class User extends Authenticatable
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class, 'agence_id');
+    }
+
+    public function guide()
+    {
+        return $this->hasOne(Guide::class);
     }
 
     public function pilgrims()

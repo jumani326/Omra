@@ -14,6 +14,9 @@ class Agency extends Model
         'name',
         'license_no',
         'ministry_status',
+        'validated',
+        'validated_by',
+        'validated_at',
         'contact',
         'logo',
     ];
@@ -22,6 +25,8 @@ class Agency extends Model
     {
         return [
             'contact' => 'array',
+            'validated' => 'boolean',
+            'validated_at' => 'datetime',
         ];
     }
 
@@ -29,6 +34,31 @@ class Agency extends Model
     public function branches()
     {
         return $this->hasMany(Branch::class);
+    }
+
+    public function validatedByUser()
+    {
+        return $this->belongsTo(User::class, 'validated_by');
+    }
+
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'agency_id');
+    }
+
+    public function guides()
+    {
+        return $this->hasMany(Guide::class, 'agency_id');
+    }
+
+    public function pilgrims()
+    {
+        return $this->hasMany(Pilgrim::class, 'agence_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'agence_id');
     }
 
     // Scopes

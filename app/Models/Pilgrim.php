@@ -11,7 +11,11 @@ class Pilgrim extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'user_id',
         'branch_id',
+        'agence_id',
+        'group_id',
+        'guide_id',
         'agent_id',
         'package_id',
         'passport_no',
@@ -24,9 +28,29 @@ class Pilgrim extends Model
     ];
 
     // Relations
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class, 'agence_id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
+
+    public function guide()
+    {
+        return $this->belongsTo(Guide::class);
     }
 
     public function agent()
@@ -69,6 +93,11 @@ class Pilgrim extends Model
         return $this->hasMany(ActivityLog::class);
     }
 
+    public function checkins()
+    {
+        return $this->hasMany(Checkin::class);
+    }
+
     // Scopes
     public function scopeBranch($query, $branchId)
     {
@@ -83,5 +112,15 @@ class Pilgrim extends Model
     public function scopeAgent($query, $agentId)
     {
         return $query->where('agent_id', $agentId);
+    }
+
+    public function scopeAgency($query, $agencyId)
+    {
+        return $query->where('agence_id', $agencyId);
+    }
+
+    public function scopeGroup($query, $groupId)
+    {
+        return $query->where('group_id', $groupId);
     }
 }

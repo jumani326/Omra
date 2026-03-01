@@ -52,6 +52,16 @@
         <form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
             @csrf
 
+            @if (session('status'))
+                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded relative text-sm">
+                    {{ session('status') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative text-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
             @if ($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
                     <ul class="list-disc list-inside text-sm">
@@ -87,8 +97,8 @@
                 </div>
 
                 <div class="text-sm">
-                    <a href="#" class="font-medium text-primary-green hover:text-dark-green">
-                        Mot de passe oublié?
+                    <a href="{{ route('password.request') }}" class="font-medium text-primary-green hover:text-dark-green">
+                        Mot de passe oublié ?
                     </a>
                 </div>
             </div>
@@ -101,8 +111,9 @@
             </div>
         </form>
         
-        <div class="text-center text-sm text-gray-600">
-            <p>Compte de test : <strong>admin@omra.test</strong> / <strong>password</strong></p>
+        <div class="text-center text-sm text-gray-600 space-y-1">
+            <p>Pas encore de compte ? <a href="{{ route('register.choose') }}" class="font-medium text-primary-green hover:text-dark-green">S'inscrire</a></p>
+            <p class="mt-2 text-xs">Comptes test : agence@omra.test, ministere@omra.test, guide@omra.test, pelerin@omra.test / <strong>password</strong></p>
         </div>
     </div>
 </body>
