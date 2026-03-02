@@ -90,8 +90,15 @@ class PackageController extends Controller
         }
         
         Gate::authorize('view', $package);
+
+        $package->loadMissing(['pilgrims' => function ($query) {
+            $query->orderBy('created_at', 'desc');
+        }]);
+
+        $pendingApplications = $package->pilgrims->where('status', 'pending');
+        $confirmedPilgrims = $package->pilgrims->where('status', '!=', 'pending');
         
-        return view('packages.show', compact('package'));
+        return view('packages.show', compact('package', 'pendingApplications', 'confirmedPilgrims'));
     }
 
     public function edit(int $id): View
@@ -107,10 +114,8 @@ class PackageController extends Controller
         return view('packages.edit', compact('package'));
     }
 
-    public function update(UpdatePackageRequest $request, int $id): RedirectResponse
+    public function update(UpdatePackageRequest $request, \App\Models\Package $package): RedirectResponse
     {
-        $package = $this->service->findById($id);
-        
         $this->service->update($package, $request->validated());
         
         return redirect()->route('packages.show', $package)
@@ -147,5 +152,32 @@ class PackageController extends Controller
         
         return redirect()->route('packages.edit', $newPackage)
             ->with('success', 'Forfait cloné avec succès. Modifiez les dates et détails.');
+    }
+
+    public function approveApplication(\App\Models\Package $package, \App\Models\Pilgrim $pilgrim): RedirectResponse
+    {
+        Gate::authorize('update', $package);
+
+        if ($pilgrim->package_id !== $package->id || $pilgrim->status !== 'pending') {
+            return redirect()
+                ->route('packages.show', $package)
+                ->with('error', 'Cette candidature n\'est pas valide pour ce forfait.');
+        }
+
+        if ($package->slots_remaining <= 0) {
+            return redirect()
+                ->route('packages.show', $package)
+                ->with('error', 'Aucune place restante pour ce forfait.');
+        }
+
+        $pilgrim->status = 'registered';
+        $pilgrim->save();
+
+        $package->slots_remaining = max(0, $package->slots_remaining - 1);
+        $package->save();
+
+        return redirect()
+            ->route('packages.show', $package)
+            ->with('success', 'Candidature validée. Le pèlerin est maintenant inscrit sur ce forfait.');
     }
 }

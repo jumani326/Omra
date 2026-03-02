@@ -50,7 +50,7 @@
 
                 <!-- Prix -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Prix de vente (MAD) *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Prix de vente (FDJ) *</label>
                     <input type="number" name="price" value="{{ old('price', $package->price) }}" step="0.01" min="0" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('price') border-red-500 @enderror">
                     @error('price')
@@ -60,7 +60,7 @@
 
                 <!-- Coût -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Coût (MAD) *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coût (FDJ) *</label>
                     <input type="number" name="cost" value="{{ old('cost', $package->cost) }}" step="0.01" min="0" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('cost') border-red-500 @enderror">
                     @error('cost')
@@ -126,6 +126,14 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nuits Médine *</label>
                     <input type="number" name="nights_medina" value="{{ old('nights_medina', $package->nights_medina) }}" min="0" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                </div>
+
+                <!-- Publier pour les clients -->
+                <div class="md:col-span-2 flex items-center">
+                    <input type="checkbox" name="is_published" value="1" id="is_published"
+                           {{ old('is_published', $package->is_published ?? false) ? 'checked' : '' }}
+                           class="rounded border-gray-300 text-primary-green focus:ring-primary-green">
+                    <label for="is_published" class="ml-2 text-sm font-medium text-gray-700">Publier ce forfait pour les clients (visible dans le catalogue)</label>
                 </div>
             </div>
 

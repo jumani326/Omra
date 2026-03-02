@@ -35,6 +35,10 @@ class PilgrimRepository
             $query->where('agent_id', $filters['agent_id']);
         }
 
+        if (isset($filters['group_id'])) {
+            $query->where('group_id', $filters['group_id']);
+        }
+
         if (isset($filters['nationality'])) {
             $query->where('nationality', $filters['nationality']);
         }

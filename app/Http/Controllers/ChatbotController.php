@@ -59,7 +59,7 @@ class ChatbotController extends Controller
         }
         if (str_contains($msg, 'paiement') || str_contains($msg, 'payer') || str_contains($msg, 'solde')) {
             $total = $pilgrim->payments()->where('status', 'completed')->sum('amount');
-            return "Vos paiements enregistrés s'élèvent à " . number_format($total, 0) . " MAD. Pour le solde ou les échéances, contactez le comptable de votre agence.";
+            return "Vos paiements enregistrés s'élèvent à " . number_format($total, 0) . " FDJ. Pour le solde ou les échéances, contactez le comptable de votre agence.";
         }
         if (str_contains($msg, 'document') || str_contains($msg, 'dossier')) {
             return "Pour compléter votre dossier, fournissez : passeport, photos, certificat médical. Déposez-les auprès de votre agence ou via l'espace prévu.";

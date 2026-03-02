@@ -26,6 +26,11 @@ class Group extends Model
         return $this->hasMany(Pilgrim::class, 'group_id');
     }
 
+    public function messages()
+    {
+        return $this->hasMany(GroupMessage::class, 'group_id')->orderBy('created_at');
+    }
+
     public function scopeAgency($query, $agencyId)
     {
         return $query->where('agency_id', $agencyId);

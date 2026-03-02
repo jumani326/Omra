@@ -22,7 +22,13 @@ class CheckRole
         }
 
         foreach ($roles as $role) {
+            // Rôle principal (agence, ministere, guide, pelerin)
             if ($request->user()->hasRole($role)) {
+                return $next($request);
+            }
+
+            // Alias pour le rôle pèlerin côté client (« Pèlerin (Client) » dans certaines parties du code)
+            if ($role === 'pelerin' && $request->user()->hasRole('Pèlerin (Client)')) {
                 return $next($request);
             }
         }

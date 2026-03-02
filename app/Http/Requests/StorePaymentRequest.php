@@ -17,7 +17,7 @@ class StorePaymentRequest extends FormRequest
         return [
             'pilgrim_id' => ['required', 'integer', 'exists:pilgrims,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'method' => ['required', 'in:cash,transfer,tpe,mobile_money'],
+            'method' => ['required', 'in:cash,transfer,tpe,mobile_money,cash_espece'],
             'status' => ['required', 'in:pending,completed,refunded'],
             'payment_date' => ['required', 'date'],
         ];

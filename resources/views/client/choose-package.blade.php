@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('page-title', 'Choisir mon forfait')
-@section('page-description', 'Complétez vos informations pour démarrer votre procédure Omra.')
+@section('page-title', 'Postuler à un forfait')
+@section('page-description', 'Complétez vos informations pour envoyer votre demande à l\'agence.')
 
 @section('content')
 <div class="max-w-2xl mx-auto">
     <div class="bg-white rounded-xl shadow-md p-6 mb-6">
         <h2 class="text-lg font-bold text-gray-900 mb-2">Forfait sélectionné</h2>
         <p class="text-xl font-semibold text-primary-green">{{ $package->name }}</p>
-        <p class="text-gray-600">{{ number_format($package->price, 0) }} MAD · {{ $package->departure_date?->translatedFormat('d M Y') }} → {{ $package->return_date?->translatedFormat('d M Y') }}</p>
+        <p class="text-gray-600">{{ number_format($package->price, 0) }} FDJ · {{ $package->departure_date?->translatedFormat('d M Y') }} → {{ $package->return_date?->translatedFormat('d M Y') }}</p>
     </div>
 
     <div class="bg-white rounded-xl shadow-md p-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Démarrer ma procédure</h2>
-        <p class="text-sm text-gray-600 mb-6">Renseignez vos informations pour créer votre dossier pèlerin. Votre email ({{ auth()->user()->email }}) sera utilisé pour vous identifier.</p>
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Postuler auprès de l'agence</h2>
+        <p class="text-sm text-gray-600 mb-6">Renseignez vos informations. Votre demande sera envoyée à l'agence <strong>{{ $package->branch->agency->name ?? '—' }}</strong>. Une fois validée, vous pourrez poursuivre la procédure. Votre email ({{ auth()->user()->email }}) sera utilisé pour vous identifier.</p>
 
         <form action="{{ route('client.package.store', $package) }}" method="POST" class="space-y-4">
             @csrf
@@ -49,9 +49,9 @@
             </div>
             <div class="flex gap-3 pt-4">
                 <button type="submit" class="flex-1 bg-primary-green text-white px-4 py-3 rounded-lg hover:bg-dark-green transition font-medium">
-                    Confirmer et créer mon dossier
+                    Envoyer ma demande
                 </button>
-                <a href="{{ route('dashboard') }}" class="px-4 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium">
+                <a href="{{ route('client.packages.index') }}" class="px-4 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium">
                     Annuler
                 </a>
             </div>

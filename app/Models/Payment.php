@@ -9,6 +9,14 @@ class Payment extends Model
 {
     use HasFactory;
 
+    public const METHOD_LABELS = [
+        'cash' => 'Espèces',
+        'cash_espece' => 'Cash espèce',
+        'transfer' => 'Virement',
+        'tpe' => 'TPE',
+        'mobile_money' => 'Mobile Money',
+    ];
+
     protected $fillable = [
         'pilgrim_id',
         'amount',
@@ -47,5 +55,10 @@ class Payment extends Model
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
+    }
+
+    public function getMethodLabelAttribute(): string
+    {
+        return self::METHOD_LABELS[$this->method] ?? ucfirst(str_replace('_', ' ', $this->method));
     }
 }

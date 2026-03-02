@@ -85,6 +85,18 @@
                     </select>
                 </div>
 
+                <!-- Groupe -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Groupe</label>
+                    <select name="group_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                        <option value="">Aucun groupe</option>
+                        @foreach($groups ?? [] as $g)
+                            <option value="{{ $g->id }}" {{ old('group_id') == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('group_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
                 <!-- Statut -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>

@@ -11,6 +11,13 @@ class UpdatePackageRequest extends FormRequest
         return $this->user()->can('update', $this->route('package'));
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has('is_published')) {
+            $this->merge(['is_published' => false]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -19,6 +26,7 @@ class UpdatePackageRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'cost' => 'required|numeric|min:0',
             'slots' => 'required|integer|min:1',
+            'is_published' => 'sometimes|boolean',
             'departure_date' => 'required|date',
             'return_date' => 'required|date|after:departure_date',
             'hotel_mecca_id' => 'nullable|exists:hotels,id',

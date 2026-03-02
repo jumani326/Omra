@@ -34,7 +34,16 @@
                     </div>
                     <div class="text-left hidden md:block">
                         <p class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">{{ auth()->user()->getRoleNames()->first() }}</p>
+                        @if(auth()->user()->hasRole('pelerin'))
+                            @php $pelerinPilgrim = \App\Models\Pilgrim::where('user_id', auth()->id())->orWhere('email', auth()->user()->email)->with('group')->first(); @endphp
+                            @if($pelerinPilgrim && $pelerinPilgrim->group)
+                                <p class="text-xs text-gray-500">Groupe : {{ $pelerinPilgrim->group->name }}</p>
+                            @else
+                                <p class="text-xs text-gray-500">Pèlerin</p>
+                            @endif
+                        @else
+                            <p class="text-xs text-gray-500">{{ auth()->user()->getRoleNames()->first() }}</p>
+                        @endif
                     </div>
                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>

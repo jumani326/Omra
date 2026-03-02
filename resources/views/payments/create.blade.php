@@ -29,7 +29,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Montant (MAD) *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Montant (FDJ) *</label>
                     <input type="number" name="amount" step="0.01" min="0.01" value="{{ old('amount') }}" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                     @error('amount')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
@@ -38,6 +38,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mode de paiement *</label>
                     <select name="method" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                         <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>Espèces</option>
+                        <option value="cash_espece" {{ old('method') == 'cash_espece' ? 'selected' : '' }}>Cash espèce</option>
                         <option value="transfer" {{ old('method') == 'transfer' ? 'selected' : '' }}>Virement</option>
                         <option value="tpe" {{ old('method') == 'tpe' ? 'selected' : '' }}>TPE</option>
                         <option value="mobile_money" {{ old('method') == 'mobile_money' ? 'selected' : '' }}>Mobile Money</option>

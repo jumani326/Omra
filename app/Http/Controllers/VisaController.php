@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVisaRequest;
 use App\Http\Requests\UpdateVisaRequest;
+use App\Mail\VisaApprovedMail;
+use App\Models\Visa;
 use App\Services\VisaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 
 class VisaController extends Controller
 {
@@ -82,5 +85,28 @@ class VisaController extends Controller
         Gate::authorize('delete', $visa);
         $this->service->delete($visa);
         return redirect()->route('visas.index')->with('success', 'Visa supprimé.');
+    }
+
+    /**
+     * Envoyer le dossier visa au client par email (PDF + documents).
+     */
+    public function sendEmail(Visa $visa): RedirectResponse
+    {
+        Gate::authorize('update', $visa);
+
+        $visa->loadMissing(['pilgrim.user', 'pilgrim.package']);
+        $pilgrim = $visa->pilgrim;
+        if (!$pilgrim) {
+            return redirect()->back()->with('error', 'Aucun pèlerin associé à ce visa.');
+        }
+
+        $email = $pilgrim->email ?: $pilgrim->user?->email;
+        if (!$email) {
+            return redirect()->back()->with('error', 'Aucune adresse email pour ce pèlerin.');
+        }
+
+        Mail::to($email)->send(new VisaApprovedMail($pilgrim, $visa));
+
+        return redirect()->back()->with('success', 'Le visa a été envoyé par email (PDF) à ' . $email . '.');
     }
 }

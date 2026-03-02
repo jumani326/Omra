@@ -9,7 +9,7 @@ class VisaPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view-visas');
+        return $user->hasRole('agence') || $user->hasPermissionTo('manage_own_visas') || $user->hasPermissionTo('view-visas');
     }
 
     public function view(User $user, Visa $visa): bool
@@ -22,17 +22,24 @@ class VisaPolicy
             return true;
         }
 
-        // Voir seulement les visas de sa branche
+        // Rôle agence : voir les visas de sa branche
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $visa->pilgrim->branch_id;
+        }
+
         return $user->branch_id === $visa->pilgrim->branch_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create-visas');
+        return $user->hasRole('agence') || $user->hasPermissionTo('manage_own_visas') || $user->hasPermissionTo('create-visas');
     }
 
     public function update(User $user, Visa $visa): bool
     {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $visa->pilgrim->branch_id;
+        }
         if (!$user->hasPermissionTo('edit-visas')) {
             return false;
         }
@@ -41,13 +48,15 @@ class VisaPolicy
             return true;
         }
 
-        // Officier Visa et Admin Branche peuvent modifier
         return $user->hasAnyRole(['Officier Visa', 'Admin Branche']) 
             && $user->branch_id === $visa->pilgrim->branch_id;
     }
 
     public function delete(User $user, Visa $visa): bool
     {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $visa->pilgrim->branch_id;
+        }
         if (!$user->hasPermissionTo('delete-visas')) {
             return false;
         }

@@ -73,6 +73,11 @@ class Pilgrim extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function transactionsDigitales()
+    {
+        return $this->hasMany(TransactionDigitale::class, 'pilgrim_id');
+    }
+
     public function commissions()
     {
         return $this->hasMany(Commission::class);

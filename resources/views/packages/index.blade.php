@@ -65,7 +65,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 mb-1">Total Revenue</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ number_format($totalRevenue ?? 0, 0) }} MAD</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($totalRevenue ?? 0, 0) }} FDJ</p>
                     <p class="text-sm text-gray-600 mt-2">Q2 Performance</p>
                 </div>
                 <div class="bg-green-100 p-3 rounded-lg">
@@ -172,7 +172,7 @@
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="font-bold text-primary-green">{{ number_format($package->price, 0) }} MAD</span>
+                            <span class="font-bold text-primary-green">{{ number_format($package->price, 0) }} FDJ</span>
                         </div>
                         @if($package->hotelMecca)
                         <div class="flex items-center text-gray-600">
@@ -281,7 +281,7 @@
                         </div>
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-medium mb-1">BASE COST (MAD)</label>
+                                <label class="block text-sm font-medium mb-1">BASE COST (FDJ)</label>
                                 <input type="number" id="base_cost" name="cost" value="1800" step="0.01" min="0" required
                                        class="w-full px-3 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-accent">
                             </div>
@@ -293,11 +293,11 @@
                             <div class="pt-2 border-t border-primary-green">
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="text-sm">Profit Per Pax:</span>
-                                    <span id="profit_per_pax" class="text-green-300 font-semibold">+0.00 MAD</span>
+                                    <span id="profit_per_pax" class="text-green-300 font-semibold">+0.00 FDJ</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="font-bold">Selling Price:</span>
-                                    <span id="selling_price" class="text-gold-accent font-bold text-lg">0.00 MAD</span>
+                                    <span id="selling_price" class="text-gold-accent font-bold text-lg">0.00 FDJ</span>
                                 </div>
                             </div>
                         </div>
@@ -329,8 +329,8 @@
         const profit = (baseCost * markup) / 100;
         const sellingPrice = baseCost + profit;
         
-        document.getElementById('profit_per_pax').textContent = `+${profit.toFixed(2)} MAD`;
-        document.getElementById('selling_price').textContent = `${sellingPrice.toFixed(2)} MAD`;
+        document.getElementById('profit_per_pax').textContent = `+${profit.toFixed(2)} FDJ`;
+        document.getElementById('selling_price').textContent = `${sellingPrice.toFixed(2)} FDJ`;
         
         // Update hidden price field
         document.getElementById('calculated_price').value = sellingPrice.toFixed(2);

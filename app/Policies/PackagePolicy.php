@@ -9,7 +9,7 @@ class PackagePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view-packages');
+        return $user->hasRole('agence') || $user->hasPermissionTo('view_own_data') || $user->hasPermissionTo('view-packages');
     }
 
     public function view(User $user, Package $package): bool
@@ -22,17 +22,24 @@ class PackagePolicy
             return true;
         }
 
-        // Voir seulement sa branche
+        // Rôle agence : voir sa branche (ou tout si pas de branche)
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $package->branch_id;
+        }
+
         return $user->branch_id === $package->branch_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create-packages');
+        return $user->hasRole('agence') || $user->hasPermissionTo('view_own_data') || $user->hasPermissionTo('create-packages');
     }
 
     public function update(User $user, Package $package): bool
     {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $package->branch_id;
+        }
         if (!$user->hasPermissionTo('edit-packages')) {
             return false;
         }
@@ -46,6 +53,9 @@ class PackagePolicy
 
     public function delete(User $user, Package $package): bool
     {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $package->branch_id;
+        }
         if (!$user->hasPermissionTo('delete-packages')) {
             return false;
         }

@@ -18,6 +18,7 @@ class Package extends Model
         'cost',
         'slots',
         'slots_remaining',
+        'is_published',
         'departure_date',
         'return_date',
         'hotel_mecca_id',
@@ -29,6 +30,7 @@ class Package extends Model
     protected function casts(): array
     {
         return [
+            'is_published' => 'boolean',
             'price' => 'decimal:2',
             'cost' => 'decimal:2',
             'departure_date' => 'date',
@@ -71,5 +73,10 @@ class Package extends Model
     public function scopeAvailable($query)
     {
         return $query->where('slots_remaining', '>', 0);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
     }
 }

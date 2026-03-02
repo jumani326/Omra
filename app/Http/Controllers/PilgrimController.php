@@ -23,7 +23,9 @@ class PilgrimController extends Controller
     {
         Gate::authorize('viewAny', \App\Models\Pilgrim::class);
         $pilgrims = $this->service->getAll($request->all());
-        return view('pilgrims.index', compact('pilgrims'));
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $groups = $agencyId ? \App\Models\Group::where('agency_id', $agencyId)->orderBy('name')->get() : collect();
+        return view('pilgrims.index', compact('pilgrims', 'groups'));
     }
 
     public function export(Request $request)
@@ -62,8 +64,10 @@ class PilgrimController extends Controller
     public function create(): View
     {
         Gate::authorize('create', \App\Models\Pilgrim::class);
-        
-        return view('pilgrims.create');
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $groups = $agencyId ? \App\Models\Group::where('agency_id', $agencyId)->orderBy('name')->get() : collect();
+
+        return view('pilgrims.create', compact('groups'));
     }
 
     public function store(StorePilgrimRequest $request): RedirectResponse
@@ -88,14 +92,16 @@ class PilgrimController extends Controller
     public function edit(int $id): View
     {
         $pilgrim = $this->service->findById($id);
-        
+
         if (!$pilgrim) {
             abort(404);
         }
-        
+
         Gate::authorize('update', $pilgrim);
-        
-        return view('pilgrims.edit', compact('pilgrim'));
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $groups = $agencyId ? \App\Models\Group::where('agency_id', $agencyId)->orderBy('name')->get() : collect();
+
+        return view('pilgrims.edit', compact('pilgrim', 'groups'));
     }
 
     public function update(UpdatePilgrimRequest $request, int $id): RedirectResponse

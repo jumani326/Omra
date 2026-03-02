@@ -61,11 +61,11 @@ return [
     |
     | Here you may specify the default timezone for your application, which
     | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | is set to "Africa/Djibouti" (heure de Djibouti, UTC+3) pour tout le système.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Africa/Djibouti'),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,5 +122,14 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Devise de l'application
+    |--------------------------------------------------------------------------
+    | Franc djiboutien (FDJ) par défaut. Modifiable via APP_CURRENCY dans .env
+    */
+    'currency' => env('APP_CURRENCY', 'FDJ'),
+    'currency_name' => env('APP_CURRENCY_NAME', 'Franc djiboutien'),
 
 ];

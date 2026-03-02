@@ -27,7 +27,7 @@
 
     <!-- Filtres -->
     <div class="bg-white rounded-lg shadow p-4">
-        <form method="GET" action="{{ route('pilgrims.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form method="GET" action="{{ route('pilgrims.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Recherche</label>
                 <input type="text" name="search" value="{{ request('search') }}" 
@@ -39,12 +39,23 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
                 <select name="status" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                     <option value="">Tous</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>En attente de validation</option>
                     <option value="registered" {{ request('status') == 'registered' ? 'selected' : '' }}>Inscrit</option>
                     <option value="dossier_complete" {{ request('status') == 'dossier_complete' ? 'selected' : '' }}>Dossier complet</option>
                     <option value="visa_submitted" {{ request('status') == 'visa_submitted' ? 'selected' : '' }}>Visa déposé</option>
                     <option value="visa_approved" {{ request('status') == 'visa_approved' ? 'selected' : '' }}>Visa approuvé</option>
                     <option value="departed" {{ request('status') == 'departed' ? 'selected' : '' }}>Parti</option>
                     <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Revenu</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Groupe</label>
+                <select name="group_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                    <option value="">Tous</option>
+                    @foreach($groups ?? [] as $g)
+                    <option value="{{ $g->id }}" {{ request('group_id') == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -101,7 +112,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                @if($pilgrim->status == 'registered') bg-yellow-100 text-yellow-800
+                                @if($pilgrim->status == 'pending') bg-amber-100 text-amber-800
+                                @elseif($pilgrim->status == 'registered') bg-yellow-100 text-yellow-800
                                 @elseif($pilgrim->status == 'dossier_complete') bg-blue-100 text-blue-800
                                 @elseif($pilgrim->status == 'visa_approved') bg-green-100 text-green-800
                                 @elseif($pilgrim->status == 'departed') bg-purple-100 text-purple-800

@@ -37,6 +37,7 @@
                 <select name="method" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                     <option value="">Tous</option>
                     <option value="cash" {{ request('method') == 'cash' ? 'selected' : '' }}>Espèces</option>
+                    <option value="cash_espece" {{ request('method') == 'cash_espece' ? 'selected' : '' }}>Cash espèce</option>
                     <option value="transfer" {{ request('method') == 'transfer' ? 'selected' : '' }}>Virement</option>
                     <option value="tpe" {{ request('method') == 'tpe' ? 'selected' : '' }}>TPE</option>
                     <option value="mobile_money" {{ request('method') == 'mobile_money' ? 'selected' : '' }}>Mobile Money</option>
@@ -70,8 +71,8 @@
                             <div class="font-medium text-gray-900">{{ $payment->pilgrim->first_name }} {{ $payment->pilgrim->last_name }}</div>
                             <div class="text-sm text-gray-500">{{ $payment->pilgrim->passport_no }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ number_format($payment->amount, 0, ',', ' ') }} MAD</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ ucfirst(str_replace('_', ' ', $payment->method)) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ number_format($payment->amount, 0, ',', ' ') }} FDJ</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $payment->method_label }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 $statusClass = match($payment->status) {

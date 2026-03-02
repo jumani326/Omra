@@ -8,7 +8,7 @@ class UserPolicy
 {
     public function viewAny(UserModel $user): bool
     {
-        return $user->hasPermissionTo('view-users');
+        return $user->hasRole('agence') || $user->hasPermissionTo('manage_own_guides') || $user->hasPermissionTo('view-users');
     }
 
     public function view(UserModel $user, UserModel $model): bool
@@ -21,7 +21,11 @@ class UserPolicy
             return true;
         }
 
-        // Admin Branche voit sa branche
+        // Rôle agence : voir les utilisateurs de sa branche (ou tout si pas de branche)
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $model->branch_id;
+        }
+
         if ($user->hasRole('Admin Branche')) {
             return $user->branch_id === $model->branch_id;
         }
@@ -31,11 +35,14 @@ class UserPolicy
 
     public function create(UserModel $user): bool
     {
-        return $user->hasPermissionTo('create-users');
+        return $user->hasRole('agence') || $user->hasPermissionTo('manage_own_guides') || $user->hasPermissionTo('create-users');
     }
 
     public function update(UserModel $user, UserModel $model): bool
     {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $model->branch_id;
+        }
         if (!$user->hasPermissionTo('edit-users')) {
             return false;
         }
@@ -44,7 +51,6 @@ class UserPolicy
             return true;
         }
 
-        // Admin Branche peut modifier les utilisateurs de sa branche
         if ($user->hasRole('Admin Branche')) {
             return $user->branch_id === $model->branch_id;
         }
@@ -54,12 +60,14 @@ class UserPolicy
 
     public function delete(UserModel $user, UserModel $model): bool
     {
-        if (!$user->hasPermissionTo('delete-users')) {
+        if ($user->id === $model->id) {
             return false;
         }
 
-        // Ne pas pouvoir se supprimer soi-même
-        if ($user->id === $model->id) {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $model->branch_id;
+        }
+        if (!$user->hasPermissionTo('delete-users')) {
             return false;
         }
 

@@ -50,7 +50,7 @@
 
                 <!-- Prix -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Prix de vente (MAD) *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Prix de vente (FDJ) *</label>
                     <input type="number" name="price" value="{{ old('price') }}" step="0.01" min="0" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('price') border-red-500 @enderror">
                     @error('price')
@@ -60,7 +60,7 @@
 
                 <!-- Coût -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Coût (MAD) *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coût (FDJ) *</label>
                     <input type="number" name="cost" value="{{ old('cost') }}" step="0.01" min="0" required
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green @error('cost') border-red-500 @enderror">
                     @error('cost')

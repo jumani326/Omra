@@ -10,9 +10,16 @@
             <h1 class="text-2xl font-bold text-gray-900">Dossier visa — {{ $visa->pilgrim->first_name }} {{ $visa->pilgrim->last_name }}</h1>
             <p class="text-gray-600 mt-1">Réf. {{ $visa->reference_no ?? '—' }}</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
             @can('update', $visa)
             <a href="{{ route('visas.edit', $visa) }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Modifier</a>
+            <form action="{{ route('visas.send-email', $visa) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition shadow-md border-2 border-green-800 bg-green-700 text-white hover:bg-green-800 hover:border-green-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    Envoyer par mail (PDF)
+                </button>
+            </form>
             @endcan
             <a href="{{ route('pilgrims.show', $visa->pilgrim) }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">Voir le pèlerin</a>
             <a href="{{ route('visas.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">Retour</a>
@@ -22,8 +29,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-lg font-bold text-gray-900 mb-4">État du visa</h2>
+            @can('update', $visa)
+            <p class="text-sm text-gray-600 mb-3">Pour changer le statut (Not submitted, Submitted, Processing, Approved, Refused), cliquez sur <a href="{{ route('visas.edit', $visa) }}" class="font-medium text-blue-600 hover:underline">Modifier</a> puis choisissez le nouveau statut et enregistrez.</p>
+            @endcan
             <div class="space-y-3">
-                <div class="flex justify-between">
+                <div class="flex justify-between items-center">
                     <span class="text-gray-600">Statut</span>
                     @php
                         $statusClass = match($visa->status) {

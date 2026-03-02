@@ -12,6 +12,16 @@
             <p class="text-gray-600 mt-1">Détails et historique</p>
         </div>
         <div class="flex flex-wrap gap-3">
+            @if($pilgrim->status === 'pending' && $pilgrim->package)
+                @can('update', $pilgrim->package)
+                <form action="{{ route('packages.applications.approve', ['package' => $pilgrim->package, 'pilgrim' => $pilgrim]) }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-dark-green transition">
+                        Accepter la candidature
+                    </button>
+                </form>
+                @endcan
+            @endif
             @can('create', App\Models\Visa::class)
             <a href="{{ route('visas.create', ['pilgrim_id' => $pilgrim->id]) }}" class="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-dark-green transition">
                 + Dossier visa
@@ -67,7 +77,8 @@
                     <div>
                         <p class="text-sm text-gray-500">Statut</p>
                         <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                            @if($pilgrim->status == 'registered') bg-yellow-100 text-yellow-800
+                            @if($pilgrim->status == 'pending') bg-amber-100 text-amber-800
+                            @elseif($pilgrim->status == 'registered') bg-yellow-100 text-yellow-800
                             @elseif($pilgrim->status == 'dossier_complete') bg-blue-100 text-blue-800
                             @elseif($pilgrim->status == 'visa_approved') bg-green-100 text-green-800
                             @elseif($pilgrim->status == 'departed') bg-purple-100 text-purple-800
@@ -155,7 +166,7 @@
                 @endcan
                 @endif
                 @if($pilgrim->payments->count() > 0)
-                <p class="text-sm text-gray-600">{{ $pilgrim->payments->count() }} paiement(s) — Total : <strong>{{ number_format($pilgrim->payments->where('status', 'completed')->sum('amount'), 0) }} MAD</strong></p>
+                <p class="text-sm text-gray-600">{{ $pilgrim->payments->count() }} paiement(s) — Total : <strong>{{ number_format($pilgrim->payments->where('status', 'completed')->sum('amount'), 0) }} FDJ</strong></p>
                 <a href="{{ route('payments.index', ['pilgrim_id' => $pilgrim->id]) }}" class="text-sm text-primary-green hover:underline">Voir les paiements</a>
                 @endif
                 @can('create', App\Models\Payment::class)

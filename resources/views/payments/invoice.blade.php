@@ -28,11 +28,11 @@
     </table>
 
     <table>
-        <tr><th>Description</th><th>Montant (MAD)</th></tr>
-        <tr><td>Paiement — {{ ucfirst(str_replace('_', ' ', $payment->method)) }}</td><td>{{ number_format($payment->amount, 2, ',', ' ') }}</td></tr>
+        <tr><th>Description</th><th>Montant (FDJ)</th></tr>
+        <tr><td>Paiement — {{ $payment->method_label }}</td><td>{{ number_format($payment->amount, 2, ',', ' ') }}</td></tr>
     </table>
 
-    <p class="total">Total : {{ number_format($payment->amount, 2, ',', ' ') }} MAD</p>
+    <p class="total">Total : {{ number_format($payment->amount, 2, ',', ' ') }} FDJ</p>
     <p>Statut : {{ $payment->status === 'completed' ? 'Payé' : ucfirst($payment->status) }}</p>
 
     <div class="footer">

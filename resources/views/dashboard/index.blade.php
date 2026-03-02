@@ -58,7 +58,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 mb-1">Monthly Revenue</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ number_format($monthlyRevenue ?? 0, 0) }} MAD</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($monthlyRevenue ?? 0, 0) }} FDJ</p>
                     <p class="text-sm text-green-600 mt-2 flex items-center">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
@@ -120,7 +120,7 @@
     <!-- Charts Row (Chart.js) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Revenus sur 12 mois (MAD)</h2>
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Revenus sur 12 mois (FDJ)</h2>
             <div class="h-64">
                 <canvas id="chartRevenue"></canvas>
             </div>
@@ -150,7 +150,7 @@
                     data: {
                         labels: revenueData.map(function(d) { return d.label; }),
                         datasets: [{
-                            label: 'Revenus (MAD)',
+                            label: 'Revenus (FDJ)',
                             data: revenueData.map(function(d) { return d.value; }),
                             borderColor: '#0F3F2E',
                             backgroundColor: 'rgba(15, 63, 46, 0.1)',

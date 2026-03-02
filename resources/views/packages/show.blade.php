@@ -64,15 +64,15 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Prix de vente</p>
-                        <p class="font-medium text-lg text-primary-green">{{ number_format($package->price, 2) }} MAD</p>
+                        <p class="font-medium text-lg text-primary-green">{{ number_format($package->price, 2) }} FDJ</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Coût</p>
-                        <p class="font-medium">{{ number_format($package->cost, 2) }} MAD</p>
+                        <p class="font-medium">{{ number_format($package->cost, 2) }} FDJ</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Profit</p>
-                        <p class="font-medium text-lg text-green-600">{{ number_format($package->price - $package->cost, 2) }} MAD</p>
+                        <p class="font-medium text-lg text-green-600">{{ number_format($package->price - $package->cost, 2) }} FDJ</p>
                     </div>
                 </div>
             </div>
@@ -99,21 +99,64 @@
             </div>
         </div>
 
-        <!-- Pèlerins inscrits -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">Pèlerins Inscrits</h2>
-            <div class="space-y-3">
-                @forelse($package->pilgrims as $pilgrim)
-                <div class="border rounded-lg p-3">
-                    <p class="font-medium text-sm">{{ $pilgrim->first_name }} {{ $pilgrim->last_name }}</p>
-                    <p class="text-xs text-gray-500">{{ $pilgrim->email ?? 'N/A' }}</p>
-                    <a href="{{ route('pilgrims.show', $pilgrim) }}" class="text-xs text-primary-green hover:underline mt-1 inline-block">
-                        Voir détails
-                    </a>
+        <!-- Candidatures & pèlerins -->
+        <div class="bg-white rounded-lg shadow p-6 space-y-6">
+            <!-- Candidatures à valider -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-900">Candidatures à valider</h2>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                        {{ $pendingApplications->count() }} en attente
+                    </span>
                 </div>
-                @empty
-                <p class="text-sm text-gray-500">Aucun pèlerin inscrit</p>
-                @endforelse
+                @if($pendingApplications->isEmpty())
+                    <p class="text-sm text-gray-500">Aucune candidature en attente pour ce forfait.</p>
+                @else
+                    <div class="space-y-3">
+                        @foreach($pendingApplications as $pilgrim)
+                            <div class="border rounded-lg p-3 flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="font-medium text-sm">{{ $pilgrim->first_name }} {{ $pilgrim->last_name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $pilgrim->email ?? 'N/A' }} · {{ $pilgrim->phone ?? 'N/A' }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">Demande créée le {{ $pilgrim->created_at?->format('d/m/Y H:i') }}</p>
+                                    <a href="{{ route('pilgrims.show', $pilgrim) }}" class="text-xs text-primary-green hover:underline mt-1 inline-block">
+                                        Voir le dossier
+                                    </a>
+                                </div>
+                                @can('update', $package)
+                                <form action="{{ route('packages.applications.approve', [$package, $pilgrim]) }}" method="POST" class="flex flex-col items-end gap-2">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-md bg-primary-green text-white text-xs font-medium hover:bg-dark-green">
+                                        Valider la candidature
+                                    </button>
+                                    <span class="text-[11px] text-gray-500">Places restantes : {{ $package->slots_remaining }}</span>
+                                </form>
+                                @endcan
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <!-- Pèlerins inscrits -->
+            <div>
+                <h2 class="text-lg font-bold text-gray-900 mb-3">Pèlerins inscrits</h2>
+                <div class="space-y-3">
+                    @forelse($confirmedPilgrims as $pilgrim)
+                    <div class="border rounded-lg p-3 flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-sm">{{ $pilgrim->first_name }} {{ $pilgrim->last_name }}</p>
+                            <p class="text-xs text-gray-500">{{ $pilgrim->email ?? 'N/A' }}</p>
+                            <p class="text-xs text-gray-400 mt-1">Statut : {{ ucfirst(str_replace('_', ' ', $pilgrim->status)) }}</p>
+                        </div>
+                        <a href="{{ route('pilgrims.show', $pilgrim) }}" class="text-xs text-primary-green hover:underline">
+                            Voir détails
+                        </a>
+                    </div>
+                    @empty
+                    <p class="text-sm text-gray-500">Aucun pèlerin confirmé pour ce forfait.</p>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>

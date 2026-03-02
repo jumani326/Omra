@@ -30,11 +30,11 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Montant</span>
-                    <span class="font-bold text-lg">{{ number_format($payment->amount, 0, ',', ' ') }} MAD</span>
+                    <span class="font-bold text-lg">{{ number_format($payment->amount, 0, ',', ' ') }} FDJ</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Mode</span>
-                    <span>{{ ucfirst(str_replace('_', ' ', $payment->method)) }}</span>
+                    <span>{{ $payment->method_label }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Statut</span>

@@ -17,7 +17,7 @@ class UpdatePaymentRequest extends FormRequest
     {
         return [
             'amount' => ['sometimes', 'numeric', 'min:0.01'],
-            'method' => ['sometimes', 'in:cash,transfer,tpe,mobile_money'],
+            'method' => ['sometimes', 'in:cash,transfer,tpe,mobile_money,cash_espece'],
             'status' => ['sometimes', 'in:pending,completed,refunded'],
             'payment_date' => ['sometimes', 'date'],
         ];

@@ -24,7 +24,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Montant (MAD) *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Montant (FDJ) *</label>
                     <input type="number" name="amount" step="0.01" min="0.01" value="{{ old('amount', $payment->amount) }}" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                     @error('amount')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
@@ -32,8 +32,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mode de paiement *</label>
                     <select name="method" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
-                        @foreach(['cash','transfer','tpe','mobile_money'] as $m)
-                        <option value="{{ $m }}" {{ old('method', $payment->method) == $m ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $m)) }}</option>
+                        @foreach(['cash' => 'Espèces', 'cash_espece' => 'Cash espèce', 'transfer' => 'Virement', 'tpe' => 'TPE', 'mobile_money' => 'Mobile Money'] as $m => $label)
+                        <option value="{{ $m }}" {{ old('method', $payment->method) == $m ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                     @error('method')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror

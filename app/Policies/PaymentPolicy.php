@@ -9,7 +9,7 @@ class PaymentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view-payments');
+        return $user->hasRole('agence') || $user->hasPermissionTo('manage_own_accounting') || $user->hasPermissionTo('view-payments');
     }
 
     public function view(User $user, Payment $payment): bool
@@ -22,17 +22,24 @@ class PaymentPolicy
             return true;
         }
 
-        // Voir seulement les paiements de sa branche
+        // Rôle agence : voir les paiements de sa branche
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $payment->pilgrim->branch_id;
+        }
+
         return $user->branch_id === $payment->pilgrim->branch_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create-payments');
+        return $user->hasRole('agence') || $user->hasPermissionTo('manage_own_accounting') || $user->hasPermissionTo('create-payments');
     }
 
     public function update(User $user, Payment $payment): bool
     {
+        if ($user->hasRole('agence')) {
+            return $user->branch_id === null || $user->branch_id === $payment->pilgrim->branch_id;
+        }
         if (!$user->hasPermissionTo('edit-payments')) {
             return false;
         }
@@ -41,7 +48,6 @@ class PaymentPolicy
             return true;
         }
 
-        // Comptable et Admin Branche peuvent modifier
         return $user->hasAnyRole(['Comptable', 'Admin Branche']) 
             && $user->branch_id === $payment->pilgrim->branch_id;
     }

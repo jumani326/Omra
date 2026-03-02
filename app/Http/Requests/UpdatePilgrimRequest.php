@@ -15,6 +15,10 @@ class UpdatePilgrimRequest extends FormRequest
     public function rules(): array
     {
         $pilgrimId = $this->route('pilgrim')->id ?? $this->route('pilgrim');
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $groupRule = $agencyId
+            ? ['nullable', 'integer', Rule::exists('groups', 'id')->where('agency_id', $agencyId)]
+            : ['nullable', 'integer', 'exists:groups,id'];
 
         return [
             'first_name' => 'required|string|max:255',
@@ -26,6 +30,7 @@ class UpdatePilgrimRequest extends FormRequest
             'branch_id' => 'nullable|exists:branches,id',
             'agent_id' => 'nullable|exists:users,id',
             'package_id' => 'nullable|exists:packages,id',
+            'group_id' => $groupRule,
             'status' => 'nullable|in:registered,dossier_complete,visa_submitted,visa_approved,departed,returned',
             
             // Documents (optionnels)

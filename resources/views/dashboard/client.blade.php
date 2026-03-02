@@ -60,7 +60,7 @@
                         <div class="p-5 border-b bg-gray-50">
                             <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-primary-green text-white uppercase">{{ $package->type }}</span>
                             <h3 class="text-lg font-bold text-gray-900 mt-2">{{ $package->name }}</h3>
-                            <p class="text-2xl font-bold text-primary-green mt-2">{{ number_format($package->price, 0) }} MAD</p>
+                            <p class="text-2xl font-bold text-primary-green mt-2">{{ number_format($package->price, 0) }} FDJ</p>
                             <p class="text-sm text-gray-500 mt-1">{{ $package->departure_date?->translatedFormat('d M Y') }} → {{ $package->return_date?->translatedFormat('d M Y') }}</p>
                             <p class="text-xs text-gray-500 mt-1">{{ $package->nights_mecca }} nuit(s) La Mecque · {{ $package->nights_medina }} nuit(s) Médine</p>
                             <p class="text-xs text-gray-500">{{ $package->slots_remaining }} place(s) restante(s)</p>

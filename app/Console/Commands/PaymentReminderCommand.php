@@ -35,7 +35,7 @@ class PaymentReminderCommand extends Command
         foreach ($pilgrims as $p) {
             $paid = (float) $p->payments()->where('status', 'completed')->sum('amount');
             $total = (float) $p->package->price;
-            $this->line("  - {$p->first_name} {$p->last_name} — Départ: {$p->package->departure_date->format('d/m/Y')} — Reste: " . number_format($total - $paid, 0) . " MAD");
+            $this->line("  - {$p->first_name} {$p->last_name} — Départ: {$p->package->departure_date->format('d/m/Y')} — Reste: " . number_format($total - $paid, 0) . " FDJ");
         }
         return self::SUCCESS;
     }
