@@ -100,6 +100,28 @@ class PelerinDashboardController extends Controller
     }
 
     /**
+     * Page dédiée « Documents » : liste et dépôt des documents du pèlerin (accessible depuis le menu client).
+     */
+    public function documents()
+    {
+        $user = Auth::user();
+        $pilgrim = Pilgrim::where('user_id', $user->id)->orWhere('email', $user->email)
+            ->with(['package', 'documents', 'visa'])
+            ->first();
+
+        if (!$pilgrim) {
+            return redirect()->route('pelerin.dashboard')
+                ->with('info', 'Vous devez être inscrit à un forfait pour accéder aux documents.');
+        }
+
+        $passportDoc = $pilgrim->documents->firstWhere('type', 'passport');
+        $photoDoc = $pilgrim->documents->firstWhere('type', 'photo');
+        $medicalDoc = $pilgrim->documents->firstWhere('type', 'medical_certificate');
+
+        return view('pelerin.documents', compact('pilgrim', 'passportDoc', 'photoDoc', 'medicalDoc'));
+    }
+
+    /**
      * Espace documents : permet au pèlerin de déposer ses pièces (passeport, photo, certificat)
      * directement depuis le tableau de bord client.
      */
@@ -132,7 +154,7 @@ class PelerinDashboardController extends Controller
         }
 
         return redirect()
-            ->route('pelerin.dashboard')
+            ->route('pelerin.documents.index')
             ->with('success', 'Vos documents ont été envoyés à l\'agence. Elle les vérifiera avant de déposer votre demande de visa.');
     }
 }

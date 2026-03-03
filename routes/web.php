@@ -105,6 +105,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Pelerin\PelerinDashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [\App\Http\Controllers\Pelerin\PelerinDashboardController::class, 'profile'])->name('profile');
         Route::put('/profile', [\App\Http\Controllers\Pelerin\PelerinDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/documents', [\App\Http\Controllers\Pelerin\PelerinDashboardController::class, 'documents'])->name('documents.index');
         Route::post('/documents/upload', [\App\Http\Controllers\Pelerin\PelerinDashboardController::class, 'uploadDocuments'])->name('documents.upload');
 
         // Paiement digital (modal : choix méthode → confirmation → enregistrement + fiche PDF)
@@ -152,6 +153,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('hotels', \App\Http\Controllers\HotelController::class);
         Route::post('visas/{visa}/send-email', [\App\Http\Controllers\VisaController::class, 'sendEmail'])->name('visas.send-email');
         Route::resource('visas', \App\Http\Controllers\VisaController::class);
+        Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index'])->name('documents.index');
         Route::get('comptabilite', [\App\Http\Controllers\ComptabiliteController::class, 'index'])->name('comptabilite.index');
         Route::resource('compte-marchands', \App\Http\Controllers\CompteMarchandController::class);
         Route::resource('transaction-digitales', \App\Http\Controllers\TransactionDigitaleController::class)->only(['index', 'create', 'store', 'show']);
