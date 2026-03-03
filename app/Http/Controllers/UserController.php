@@ -20,8 +20,18 @@ class UserController extends Controller
 
         $query = User::with(['branch', 'roles']);
 
-        if (auth()->user()->branch_id && !auth()->user()->hasRole('Super Admin Agence')) {
-            $query->where('branch_id', auth()->user()->branch_id);
+        $currentUser = auth()->user();
+        if ($currentUser->branch_id && !$currentUser->hasRole('Super Admin Agence')) {
+            $query->where('branch_id', $currentUser->branch_id);
+        } else {
+            // Sans branche : limiter aux utilisateurs de la même agence
+            $agencyId = $currentUser->agence_id ?? $currentUser->branch?->agency_id;
+            if ($agencyId) {
+                $branchIds = Branch::where('agency_id', $agencyId)->pluck('id');
+                $query->where(function ($q) use ($agencyId, $branchIds) {
+                    $q->where('agence_id', $agencyId)->orWhereIn('branch_id', $branchIds);
+                });
+            }
         }
 
         if ($request->filled('search')) {
@@ -44,7 +54,10 @@ class UserController extends Controller
     public function create(): View
     {
         Gate::authorize('create', User::class);
-        $branches = Branch::orderBy('name')->get();
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $branches = $agencyId
+            ? Branch::where('agency_id', $agencyId)->orderBy('name')->get()
+            : Branch::orderBy('name')->get();
         $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
         return view('users.create', compact('branches', 'roles'));
     }
@@ -72,7 +85,10 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         Gate::authorize('update', $user);
-        $branches = Branch::orderBy('name')->get();
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $branches = $agencyId
+            ? Branch::where('agency_id', $agencyId)->orderBy('name')->get()
+            : Branch::orderBy('name')->get();
         $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
         return view('users.edit', compact('user', 'branches', 'roles'));
     }

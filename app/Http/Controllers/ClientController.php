@@ -42,6 +42,23 @@ class ClientController extends Controller
     }
 
     /**
+     * Détail d'un forfait pour le client (voir plus).
+     */
+    public function packageShow(Package $package)
+    {
+        if (!Auth::user()->hasRole('pelerin')) {
+            abort(403);
+        }
+
+        $package->load(['branch.agency', 'hotelMecca', 'hotelMedina']);
+        $pilgrim = Pilgrim::where('user_id', Auth::id())
+            ->orWhere('email', Auth::user()->email)
+            ->first();
+
+        return view('client.packages.show', compact('package', 'pilgrim'));
+    }
+
+    /**
      * Affiche le formulaire pour postuler à un forfait (création demande en attente).
      */
     public function choosePackage(Package $package)

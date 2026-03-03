@@ -14,6 +14,13 @@ class PackagePolicy
 
     public function view(User $user, Package $package): bool
     {
+        // Chaque agence ne voit que ses propres forfaits (via la branche)
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $packageAgencyId = $package->branch?->agency_id;
+        if ($userAgencyId && $packageAgencyId != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('Super Admin Agence')) {
             return true;
         }
@@ -37,6 +44,12 @@ class PackagePolicy
 
     public function update(User $user, Package $package): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $packageAgencyId = $package->branch?->agency_id;
+        if ($userAgencyId && $packageAgencyId != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $package->branch_id;
         }
@@ -53,6 +66,12 @@ class PackagePolicy
 
     public function delete(User $user, Package $package): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $packageAgencyId = $package->branch?->agency_id;
+        if ($userAgencyId && $packageAgencyId != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $package->branch_id;
         }

@@ -75,6 +75,10 @@
                         </div>
                         <p class="text-xl font-bold text-primary-green mt-3">{{ number_format($package->price, 0, ',', ' ') }} FDJ</p>
                         <p class="text-xs text-gray-500 mt-0.5">{{ $package->departure_date?->translatedFormat('d M Y') }} → {{ $package->return_date?->translatedFormat('d M Y') }} · {{ $package->slots_remaining > 0 ? $package->slots_remaining . ' place(s)' : 'Complet' }}</p>
+                        <a href="{{ route('client.packages.show', $package) }}" class="mt-3 block w-full text-center px-5 py-3 bg-primary-green text-white text-base font-bold rounded-xl hover:bg-dark-green transition shadow-md border-2 border-primary-green hover:border-dark-green" style="background-color: #0F3F2E;">
+                            Voir plus
+                            <svg class="w-5 h-5 ml-1.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
                         <div class="mt-4 pt-3 border-t border-gray-100">
                             @if($pilgrim && $pilgrim->package_id == $package->id)
                                 @if($pilgrim->status === 'pending')

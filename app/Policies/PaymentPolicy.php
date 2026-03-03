@@ -14,6 +14,11 @@ class PaymentPolicy
 
     public function view(User $user, Payment $payment): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $payment->pilgrim?->agence_id != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('Super Admin Agence')) {
             return true;
         }
@@ -22,7 +27,6 @@ class PaymentPolicy
             return true;
         }
 
-        // Rôle agence : voir les paiements de sa branche
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $payment->pilgrim->branch_id;
         }
@@ -37,6 +41,11 @@ class PaymentPolicy
 
     public function update(User $user, Payment $payment): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $payment->pilgrim?->agence_id != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $payment->pilgrim->branch_id;
         }

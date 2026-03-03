@@ -14,6 +14,12 @@ class VisaPolicy
 
     public function view(User $user, Visa $visa): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $pilgrimAgencyId = $visa->pilgrim?->agence_id;
+        if ($userAgencyId && $pilgrimAgencyId != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('Super Admin Agence')) {
             return true;
         }
@@ -22,7 +28,6 @@ class VisaPolicy
             return true;
         }
 
-        // Rôle agence : voir les visas de sa branche
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $visa->pilgrim->branch_id;
         }
@@ -37,6 +42,11 @@ class VisaPolicy
 
     public function update(User $user, Visa $visa): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $visa->pilgrim?->agence_id != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $visa->pilgrim->branch_id;
         }
@@ -54,6 +64,11 @@ class VisaPolicy
 
     public function delete(User $user, Visa $visa): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $visa->pilgrim?->agence_id != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $visa->pilgrim->branch_id;
         }

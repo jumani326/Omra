@@ -93,7 +93,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Hôtel La Mecque</label>
                     <select name="hotel_mecca_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                         <option value="">Sélectionner</option>
-                        @foreach(\App\Models\Hotel::where('city', 'mecca')->get() as $hotel)
+                        @foreach(($hotelsMecca ?? []) as $hotel)
                             <option value="{{ $hotel->id }}" {{ old('hotel_mecca_id', $package->hotel_mecca_id) == $hotel->id ? 'selected' : '' }}>
                                 {{ $hotel->name }} ({{ $hotel->stars }}⭐)
                             </option>
@@ -113,7 +113,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Hôtel Médine</label>
                     <select name="hotel_medina_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
                         <option value="">Sélectionner</option>
-                        @foreach(\App\Models\Hotel::where('city', 'medina')->get() as $hotel)
+                        @foreach(($hotelsMedina ?? []) as $hotel)
                             <option value="{{ $hotel->id }}" {{ old('hotel_medina_id', $package->hotel_medina_id) == $hotel->id ? 'selected' : '' }}>
                                 {{ $hotel->name }} ({{ $hotel->stars }}⭐)
                             </option>

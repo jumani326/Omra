@@ -13,6 +13,13 @@ class UserPolicy
 
     public function view(UserModel $user, UserModel $model): bool
     {
+        // Chaque agence ne voit que les utilisateurs de sa propre agence
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $modelAgencyId = $model->agence_id ?? $model->branch?->agency_id;
+        if ($userAgencyId && $modelAgencyId != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('Super Admin Agence')) {
             return true;
         }
@@ -21,7 +28,6 @@ class UserPolicy
             return true;
         }
 
-        // Rôle agence : voir les utilisateurs de sa branche (ou tout si pas de branche)
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $model->branch_id;
         }
@@ -40,6 +46,12 @@ class UserPolicy
 
     public function update(UserModel $user, UserModel $model): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $modelAgencyId = $model->agence_id ?? $model->branch?->agency_id;
+        if ($userAgencyId && $modelAgencyId != $userAgencyId) {
+            return false;
+        }
+
         if ($user->hasRole('agence')) {
             return $user->branch_id === null || $user->branch_id === $model->branch_id;
         }
@@ -61,6 +73,12 @@ class UserPolicy
     public function delete(UserModel $user, UserModel $model): bool
     {
         if ($user->id === $model->id) {
+            return false;
+        }
+
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $modelAgencyId = $model->agence_id ?? $model->branch?->agency_id;
+        if ($userAgencyId && $modelAgencyId != $userAgencyId) {
             return false;
         }
 

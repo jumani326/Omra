@@ -212,19 +212,19 @@
                     @if($balanceDue > 0)
                         @if($canPay)
                             @if($hasPendingPayment)
-                            <button type="button" disabled class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-400 font-semibold rounded-lg cursor-not-allowed">
+                            <button type="button" disabled class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-primary-green/80 text-white font-semibold rounded-lg cursor-not-allowed opacity-90">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                                 Paiement en attente de validation
                             </button>
                             <p class="mt-2 text-xs text-gray-500 max-w-xs">Vous avez déjà déclaré un paiement. L'agence le validera sous peu. Consultez « Mes paiements digitaux » ci-dessous.</p>
                             @else
-                            <button type="button" @click="open = true; reset()" class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-primary-green text-white font-semibold rounded-lg hover:bg-dark-green transition shadow">
+                            <button type="button" @click="open = true; reset()" class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-primary-green text-white font-semibold rounded-lg hover:bg-dark-green transition shadow focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                                 Procéder au paiement
                             </button>
                             @endif
                         @else
-                            <button class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-400 font-semibold rounded-lg cursor-not-allowed">
+                            <button type="button" disabled class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-primary-green/70 text-white font-semibold rounded-lg cursor-not-allowed opacity-90">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                                 Paiement disponible après visa
                             </button>
@@ -232,6 +232,13 @@
                                 Une fois vos documents validés et votre visa approuvé par l'agence, vous pourrez procéder au règlement du solde.
                             </p>
                         @endif
+                    @else
+                        {{-- Solde réglé : bouton visible en vert du système mais non cliquable --}}
+                        <button type="button" disabled class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-primary-green text-white font-semibold rounded-lg cursor-not-allowed opacity-90 shadow">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Solde réglé
+                        </button>
+                        <p class="mt-2 text-xs text-gray-500 max-w-xs">Votre package a été entièrement payé. Merci.</p>
                     @endif
                 </div>
             </div>

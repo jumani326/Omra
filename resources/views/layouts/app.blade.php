@@ -13,7 +13,18 @@
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-green': '#0F3F2E',
+                        'dark-green': '#0B2C21',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         :root {
             --primary-green: #0F3F2E;

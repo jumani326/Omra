@@ -259,7 +259,7 @@
                         <label class="block text-sm font-medium mb-2">HOTEL ASSIGNMENT</label>
                         <select name="hotel_mecca_id" class="w-full px-3 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-accent">
                             <option value="">Select Hotel</option>
-                            @foreach(\App\Models\Hotel::where('city', 'mecca')->get() as $hotel)
+                            @foreach(($hotelsMecca ?? []) as $hotel)
                                 <option value="{{ $hotel->id }}">{{ $hotel->name }}</option>
                             @endforeach
                         </select>

@@ -126,6 +126,7 @@ Route::middleware(['auth'])->group(function () {
     // Espace client (Pèlerin) — catalogue forfaits publiés et postuler
     Route::prefix('client')->name('client.')->middleware('role:pelerin')->group(function () {
         Route::get('packages', [ClientController::class, 'packagesIndex'])->name('packages.index');
+        Route::get('packages/{package}', [ClientController::class, 'packageShow'])->name('packages.show');
         Route::get('package/{package}/choose', [ClientController::class, 'choosePackage'])->name('package.choose');
         Route::post('package/{package}/store', [ClientController::class, 'storeChoosePackage'])->name('package.store');
     });
@@ -154,6 +155,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('visas/{visa}/send-email', [\App\Http\Controllers\VisaController::class, 'sendEmail'])->name('visas.send-email');
         Route::resource('visas', \App\Http\Controllers\VisaController::class);
         Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index'])->name('documents.index');
+        Route::post('documents/pilgrim/{pilgrim}/validate-dossier', [\App\Http\Controllers\DocumentController::class, 'validateDossier'])->name('documents.validate-dossier');
         Route::get('comptabilite', [\App\Http\Controllers\ComptabiliteController::class, 'index'])->name('comptabilite.index');
         Route::resource('compte-marchands', \App\Http\Controllers\CompteMarchandController::class);
         Route::resource('transaction-digitales', \App\Http\Controllers\TransactionDigitaleController::class)->only(['index', 'create', 'store', 'show']);

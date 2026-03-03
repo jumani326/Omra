@@ -14,12 +14,18 @@ class PilgrimRepository
         $query = Pilgrim::with(['branch', 'agent', 'package', 'visa'])
             ->withCount('payments');
 
-        // Filtre par branche (Super Admin peut filtrer par branche via session)
-        $branchId = Auth::user()->hasRole('Super Admin Agence')
+        // Filtre par branche ou par agence (chaque agence ne voit que ses pèlerins)
+        $user = Auth::user();
+        $branchId = $user->hasRole('Super Admin Agence')
             ? session('current_branch_id')
-            : Auth::user()->branch_id;
+            : $user->branch_id;
         if ($branchId) {
             $query->where('branch_id', $branchId);
+        } else {
+            $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+            if ($agencyId) {
+                $query->where('agence_id', $agencyId);
+            }
         }
 
         // Filtres
@@ -88,11 +94,17 @@ class PilgrimRepository
     public function getByStatus(string $status): Collection
     {
         $query = Pilgrim::where('status', $status);
-        $branchId = Auth::user()->hasRole('Super Admin Agence')
+        $user = Auth::user();
+        $branchId = $user->hasRole('Super Admin Agence')
             ? session('current_branch_id')
-            : Auth::user()->branch_id;
+            : $user->branch_id;
         if ($branchId) {
             $query->where('branch_id', $branchId);
+        } else {
+            $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+            if ($agencyId) {
+                $query->where('agence_id', $agencyId);
+            }
         }
         return $query->get();
     }

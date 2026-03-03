@@ -27,14 +27,21 @@ class PilgrimService
 
     public function create(array $data): Pilgrim
     {
+        $currentUser = Auth::user();
         // Assigner la branche de l'utilisateur si non spécifiée
-        if (!isset($data['branch_id']) && Auth::user()->branch_id) {
-            $data['branch_id'] = Auth::user()->branch_id;
+        if (!isset($data['branch_id']) && $currentUser->branch_id) {
+            $data['branch_id'] = $currentUser->branch_id;
+        }
+
+        // Toujours lier le pèlerin à l'agence de l'utilisateur connecté
+        $agencyId = $currentUser->agence_id ?? $currentUser->branch?->agency_id;
+        if ($agencyId) {
+            $data['agence_id'] = $agencyId;
         }
 
         // Assigner l'agent si non spécifié
-        if (!isset($data['agent_id']) && Auth::user()->hasRole(['Agent Commercial', 'Admin Branche'])) {
-            $data['agent_id'] = Auth::user()->id;
+        if (!isset($data['agent_id']) && $currentUser->hasRole(['Agent Commercial', 'Admin Branche'])) {
+            $data['agent_id'] = $currentUser->id;
         }
 
         // Statut initial

@@ -132,10 +132,16 @@ class PilgrimController extends Controller
 
     public function transfer(Request $request, \App\Models\Pilgrim $pilgrim): RedirectResponse
     {
+        Gate::authorize('update', $pilgrim);
         if (!auth()->user()->hasRole('Super Admin Agence')) {
             abort(403, 'Seul le Super Admin peut transférer un pèlerin.');
         }
         $request->validate(['branch_id' => 'required|exists:branches,id']);
+        $targetBranch = \App\Models\Branch::find($request->branch_id);
+        // Le transfert ne peut se faire que vers une branche de la même agence
+        if ($pilgrim->agence_id && $targetBranch->agency_id != $pilgrim->agence_id) {
+            return redirect()->back()->with('error', 'Le pèlerin ne peut être transféré que vers une branche de la même agence.');
+        }
         if ($this->service->transferToBranch($pilgrim, (int) $request->branch_id)) {
             return redirect()->route('pilgrims.show', $pilgrim)->with('success', 'Pèlerin transféré vers la nouvelle branche.');
         }

@@ -24,12 +24,18 @@ class PilgrimPolicy
      */
     public function view(User $user, Pilgrim $pilgrim): bool
     {
+        // Chaque agence ne voit que ses propres pèlerins
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $pilgrim->agence_id != $userAgencyId) {
+            return false;
+        }
+
         // Utilisateur agence sans sous-rôle : accès selon sa branche (ou tout si pas de branche)
         if ($user->hasRole('agence') && !$user->hasAnyRole(['Super Admin Agence', 'Admin Branche', 'Agent Commercial', 'Comptable', 'Officier Visa', 'Guide / Mourchid'])) {
             return $user->branch_id === null || $user->branch_id === $pilgrim->branch_id;
         }
 
-        // Super Admin voit tout
+        // Super Admin Agence : limité à son agence (déjà vérifié ci-dessus)
         if ($user->hasRole('Super Admin Agence')) {
             return true;
         }
@@ -85,6 +91,12 @@ class PilgrimPolicy
      */
     public function update(User $user, Pilgrim $pilgrim): bool
     {
+        // Chaque agence ne modifie que ses propres pèlerins
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $pilgrim->agence_id != $userAgencyId) {
+            return false;
+        }
+
         // Rôle agence (sans sous-rôle) : modifier uniquement les pèlerins de sa branche
         if ($user->hasRole('agence') && !$user->hasAnyRole(['Super Admin Agence', 'Admin Branche', 'Agent Commercial', 'Comptable', 'Officier Visa', 'Guide / Mourchid'])) {
             return ($user->branch_id === null || $user->branch_id === $pilgrim->branch_id) && $user->hasPermissionTo('manage_own_pilgrims');
@@ -94,7 +106,7 @@ class PilgrimPolicy
             return false;
         }
 
-        // Super Admin peut modifier tout
+        // Super Admin Agence : limité à son agence (déjà vérifié ci-dessus)
         if ($user->hasRole('Super Admin Agence')) {
             return true;
         }
@@ -112,6 +124,12 @@ class PilgrimPolicy
      */
     public function delete(User $user, Pilgrim $pilgrim): bool
     {
+        // Chaque agence ne supprime que ses propres pèlerins
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $pilgrim->agence_id != $userAgencyId) {
+            return false;
+        }
+
         // Rôle agence avec manage_own_pilgrims : supprimer uniquement dans sa branche (ou tout si pas de branche)
         if ($user->hasRole('agence') && $user->hasPermissionTo('manage_own_pilgrims')) {
             if ($user->hasRole('Super Admin Agence')) {

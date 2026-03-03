@@ -30,7 +30,10 @@ class PaymentController extends Controller
         Gate::authorize('create', \App\Models\Payment::class);
         $pilgrimId = $request->get('pilgrim_id');
         $pilgrim = $pilgrimId ? \App\Models\Pilgrim::find($pilgrimId) : null;
-        $pilgrims = \App\Models\Pilgrim::when(auth()->user()->branch_id && !auth()->user()->hasRole('Super Admin Agence'), fn ($q) => $q->where('branch_id', auth()->user()->branch_id))
+        $u = auth()->user();
+        $branchId = $u->hasRole('Super Admin Agence') ? session('current_branch_id') : $u->branch_id;
+        $pilgrims = \App\Models\Pilgrim::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when(!$branchId && ($agencyId = $u->agence_id ?? $u->branch?->agency_id), fn ($q) => $q->where('agence_id', $agencyId))
             ->orderBy('last_name')->get();
         $nextRefNo = $this->service->getNextRefNo();
         return view('payments.create', compact('pilgrims', 'pilgrim', 'nextRefNo'));

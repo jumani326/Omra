@@ -25,52 +25,72 @@ class PackageController extends Controller
         
         $packages = $this->service->getAll($request->all());
         
-        // Calculate KPI metrics
+        // KPI limités à la branche ou à l'agence de l'utilisateur
         $user = auth()->user();
-        $totalPackages = \App\Models\Package::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )->count();
-        
-        $newPackagesThisMonth = \App\Models\Package::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )
-        ->whereMonth('created_at', now()->month)
-        ->whereYear('created_at', now()->year)
-        ->count();
-        
-        $activeBookings = \App\Models\Pilgrim::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )
-        ->whereNotNull('package_id')
-        ->count();
-        
-        $totalSlots = \App\Models\Package::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->where('branch_id', $user->branch_id)
-        )->sum('slots');
-        
+        $branchId = $user->hasRole('Super Admin Agence') ? session('current_branch_id') : $user->branch_id;
+        $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+
+        $scopePackages = function ($q) use ($branchId, $agencyId) {
+            if ($branchId) {
+                $q->where('branch_id', $branchId);
+            } elseif ($agencyId) {
+                $q->whereHas('branch', fn ($b) => $b->where('agency_id', $agencyId));
+            }
+        };
+        $scopePilgrims = function ($q) use ($branchId, $agencyId) {
+            if ($branchId) {
+                $q->where('branch_id', $branchId);
+            } elseif ($agencyId) {
+                $q->where('agence_id', $agencyId);
+            }
+        };
+        $scopePayments = function ($q) use ($branchId, $agencyId) {
+            if ($branchId) {
+                $q->whereHas('pilgrim', fn ($p) => $p->where('branch_id', $branchId));
+            } elseif ($agencyId) {
+                $q->whereHas('pilgrim', fn ($p) => $p->where('agence_id', $agencyId));
+            }
+        };
+
+        $totalPackages = \App\Models\Package::when($branchId || $agencyId, $scopePackages)->count();
+        $newPackagesThisMonth = \App\Models\Package::when($branchId || $agencyId, $scopePackages)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        $activeBookings = \App\Models\Pilgrim::when($branchId || $agencyId, $scopePilgrims)
+            ->whereNotNull('package_id')
+            ->count();
+        $totalSlots = \App\Models\Package::when($branchId || $agencyId, $scopePackages)->sum('slots');
         $fillRate = $totalSlots > 0 ? round(($activeBookings / $totalSlots) * 100, 0) : 0;
+        $totalRevenue = \App\Models\Payment::when($branchId || $agencyId, $scopePayments)
+            ->where('status', 'completed')
+            ->sum('amount');
         
-        $totalRevenue = \App\Models\Payment::when($user->branch_id && !$user->hasRole('Super Admin Agence'),
-            fn($q) => $q->whereHas('pilgrim', fn($p) => $p->where('branch_id', $user->branch_id))
-        )
-        ->where('status', 'completed')
-        ->sum('amount');
-        
+        $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+        $hotelsMecca = \App\Models\Hotel::when($agencyId, fn ($q) => $q->where('agency_id', $agencyId))->where('city', 'mecca')->orderBy('name')->get();
+        $hotelsMedina = \App\Models\Hotel::when($agencyId, fn ($q) => $q->where('agency_id', $agencyId))->where('city', 'medina')->orderBy('name')->get();
+
         return view('packages.index', compact(
             'packages',
             'totalPackages',
             'newPackagesThisMonth',
             'activeBookings',
             'fillRate',
-            'totalRevenue'
+            'totalRevenue',
+            'hotelsMecca',
+            'hotelsMedina'
         ));
     }
 
     public function create(): View
     {
         Gate::authorize('create', \App\Models\Package::class);
-        
-        return view('packages.create');
+
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $hotelsMecca = \App\Models\Hotel::when($agencyId, fn ($q) => $q->where('agency_id', $agencyId))->where('city', 'mecca')->orderBy('name')->get();
+        $hotelsMedina = \App\Models\Hotel::when($agencyId, fn ($q) => $q->where('agency_id', $agencyId))->where('city', 'medina')->orderBy('name')->get();
+
+        return view('packages.create', compact('hotelsMecca', 'hotelsMedina'));
     }
 
     public function store(StorePackageRequest $request): RedirectResponse
@@ -110,8 +130,12 @@ class PackageController extends Controller
         }
         
         Gate::authorize('update', $package);
-        
-        return view('packages.edit', compact('package'));
+
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        $hotelsMecca = \App\Models\Hotel::when($agencyId, fn ($q) => $q->where('agency_id', $agencyId))->where('city', 'mecca')->orderBy('name')->get();
+        $hotelsMedina = \App\Models\Hotel::when($agencyId, fn ($q) => $q->where('agency_id', $agencyId))->where('city', 'medina')->orderBy('name')->get();
+
+        return view('packages.edit', compact('package', 'hotelsMecca', 'hotelsMedina'));
     }
 
     public function update(UpdatePackageRequest $request, \App\Models\Package $package): RedirectResponse

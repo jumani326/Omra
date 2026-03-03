@@ -61,6 +61,11 @@ class Agency extends Model
         return $this->hasMany(User::class, 'agence_id');
     }
 
+    public function hotels()
+    {
+        return $this->hasMany(Hotel::class, 'agency_id');
+    }
+
     // Scopes
     public function scopeApproved($query)
     {

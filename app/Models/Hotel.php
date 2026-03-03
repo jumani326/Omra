@@ -11,6 +11,7 @@ class Hotel extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'agency_id',
         'name',
         'city',
         'stars',
@@ -28,6 +29,11 @@ class Hotel extends Model
     }
 
     // Relations
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class);
+    }
+
     public function packagesMecca()
     {
         return $this->hasMany(Package::class, 'hotel_mecca_id');

@@ -4,18 +4,9 @@ namespace App\Policies;
 
 use App\Models\Hotel;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class HotelPolicy
 {
-    public function before(User $user, string $ability): ?bool
-    {
-        if ($user->hasRole('Super Admin Agence')) {
-            return true;
-        }
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
         return $user->hasRole('agence') || $user->hasPermissionTo('view_own_data') || $user->hasPermissionTo('view-packages') || $user->hasPermissionTo('create-packages');
@@ -23,6 +14,10 @@ class HotelPolicy
 
     public function view(User $user, Hotel $hotel): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $hotel->agency_id != $userAgencyId) {
+            return false;
+        }
         return $user->hasRole('agence') || $user->hasPermissionTo('view-packages') || $user->hasPermissionTo('create-packages');
     }
 
@@ -33,16 +28,28 @@ class HotelPolicy
 
     public function update(User $user, Hotel $hotel): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $hotel->agency_id != $userAgencyId) {
+            return false;
+        }
         return $user->hasRole('agence') || $user->hasPermissionTo('edit-packages');
     }
 
     public function delete(User $user, Hotel $hotel): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $hotel->agency_id != $userAgencyId) {
+            return false;
+        }
         return $user->hasRole('agence') || $user->hasPermissionTo('delete-packages');
     }
 
     public function restore(User $user, Hotel $hotel): bool
     {
+        $userAgencyId = $user->agence_id ?? $user->branch?->agency_id;
+        if ($userAgencyId && $hotel->agency_id != $userAgencyId) {
+            return false;
+        }
         return $user->hasPermissionTo('delete-packages');
     }
 

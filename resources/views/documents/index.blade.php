@@ -14,7 +14,7 @@
 
     <!-- Filtres -->
     <div class="bg-white rounded-lg shadow p-4">
-        <form method="GET" action="{{ route('documents.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form method="GET" action="{{ route('documents.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Pèlerin</label>
                 <select name="pilgrim_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
@@ -33,6 +33,14 @@
                     <option value="passport" {{ request('type') == 'passport' ? 'selected' : '' }}>Passeport</option>
                     <option value="photo" {{ request('type') == 'photo' ? 'selected' : '' }}>Photo</option>
                     <option value="medical_certificate" {{ request('type') == 'medical_certificate' ? 'selected' : '' }}>Certificat médical</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Statut dossier</label>
+                <select name="dossier_status" class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-green focus:ring-primary-green">
+                    <option value="">Tous</option>
+                    <option value="complete_validated" {{ request('dossier_status') == 'complete_validated' ? 'selected' : '' }}>Complet et validé</option>
+                    <option value="not_validated" {{ request('dossier_status') == 'not_validated' ? 'selected' : '' }}>Non validé</option>
                 </select>
             </div>
             <div class="flex items-end gap-2">
@@ -54,12 +62,17 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pèlerin</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut dossier</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date dépôt</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($documents as $doc)
+                    @php
+                        $validatedStatuses = ['dossier_complete', 'visa_submitted', 'visa_approved', 'departed', 'returned'];
+                        $isDossierValidated = $doc->pilgrim->status && in_array($doc->pilgrim->status, $validatedStatuses);
+                    @endphp
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="font-medium text-gray-900">{{ $doc->pilgrim->first_name }} {{ $doc->pilgrim->last_name }}</div>
@@ -69,18 +82,35 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ ucfirst(str_replace('_', ' ', $doc->type)) }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($isDossierValidated)
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Complet et validé</span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Non validé</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $doc->uploaded_at?->format('d/m/Y H:i') ?? '—' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-primary-green hover:underline font-medium">
-                                Voir / Télécharger
-                            </a>
+                            <div class="flex items-center justify-end gap-2 flex-wrap">
+                                <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-primary-green hover:underline font-medium">
+                                    Voir / Télécharger
+                                </a>
+                                @if(!$isDossierValidated)
+                                    <form action="{{ route('documents.validate-dossier', $doc->pilgrim) }}" method="POST" class="inline" onsubmit="return confirm('Valider le dossier de ce pèlerin ?');">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition">
+                                            Valider le dossier
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                             Aucun document déposé pour le moment. Les pèlerins déposent leurs pièces depuis leur espace « Documents ».
                         </td>
                     </tr>

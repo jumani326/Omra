@@ -13,12 +13,18 @@ class PackageRepository
         $query = Package::with(['branch'])
             ->withCount('pilgrims');
 
-        // Filtre par branche (Super Admin peut filtrer par branche via session)
-        $branchId = Auth::user()->hasRole('Super Admin Agence')
+        // Filtre par branche ou par agence (chaque agence ne voit que ses forfaits)
+        $user = Auth::user();
+        $branchId = $user->hasRole('Super Admin Agence')
             ? session('current_branch_id')
-            : Auth::user()->branch_id;
+            : $user->branch_id;
         if ($branchId) {
             $query->where('branch_id', $branchId);
+        } else {
+            $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+            if ($agencyId) {
+                $query->whereHas('branch', fn ($q) => $q->where('agency_id', $agencyId));
+            }
         }
 
         // Filtres
@@ -68,11 +74,17 @@ class PackageRepository
         $query = Package::where('slots_remaining', '>', 0)
             ->where('departure_date', '>=', now());
 
-        $branchId = Auth::user()->hasRole('Super Admin Agence')
+        $user = Auth::user();
+        $branchId = $user->hasRole('Super Admin Agence')
             ? session('current_branch_id')
-            : Auth::user()->branch_id;
+            : $user->branch_id;
         if ($branchId) {
             $query->where('branch_id', $branchId);
+        } else {
+            $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+            if ($agencyId) {
+                $query->whereHas('branch', fn ($q) => $q->where('agency_id', $agencyId));
+            }
         }
 
         return $query->get();

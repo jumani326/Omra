@@ -14,23 +14,30 @@ class HotelController extends Controller
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', Hotel::class);
-        
+
+        $user = auth()->user();
+        $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+
         $query = Hotel::query();
-        
-        // Filtres
+
+        // Chaque agence ne voit que ses propres hôtels
+        if ($agencyId) {
+            $query->where('agency_id', $agencyId);
+        }
+
         if ($request->has('city')) {
             $query->where('city', $request->city);
         }
-        
+
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             });
         }
-        
+
         $hotels = $query->orderBy('city')->orderBy('name')->paginate(15);
-        
+
         return view('hotels.index', compact('hotels'));
     }
 
@@ -70,7 +77,12 @@ class HotelController extends Controller
             }
             $validated['room_images'] = $roomImages;
         }
-        
+
+        $agencyId = auth()->user()->agence_id ?? auth()->user()->branch?->agency_id;
+        if ($agencyId) {
+            $validated['agency_id'] = $agencyId;
+        }
+
         Hotel::create($validated);
         
         return redirect()->route('hotels.index')

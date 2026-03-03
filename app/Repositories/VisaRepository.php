@@ -17,6 +17,11 @@ class VisaRepository
             : ($user->hasRole(['Superviseur Ministériel National', 'Auditeur National']) ? null : $user->branch_id);
         if ($branchId) {
             $query->whereHas('pilgrim', fn ($q) => $q->where('branch_id', $branchId));
+        } else {
+            $agencyId = $user->agence_id ?? $user->branch?->agency_id;
+            if ($agencyId) {
+                $query->whereHas('pilgrim', fn ($q) => $q->where('agence_id', $agencyId));
+            }
         }
 
         if (isset($filters['status'])) {
